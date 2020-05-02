@@ -18,6 +18,7 @@ Don't have Xampp yet? Check the step How to run the code on your machine.
 ### 4. Clone the Git
 `git clone https://github.com/ChaVishKenJun/Boat.git`
 
+
 ## How to run the code on your machine
 
 ### 1. Install Xmapp
@@ -39,6 +40,7 @@ https://www.apachefriends.org/download.html
 
 ### 3. Pull changes
 `git pull`
+
 
 ## How to push your changes into the Git
 
