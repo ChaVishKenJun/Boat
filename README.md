@@ -9,8 +9,11 @@ https://git-scm.com/downloads
 
 ### 3. Select your workspace
 `cd Path/To/Your/Workspace`
+
 For easier debug, Xampp folder is recommended for your workspace.
+
 Don't have Xampp yet? Check the step How to run the code on your machine.
+
 
 ### 4. Clone the Git
 `git clone https://github.com/ChaVishKenJun/Boat.git`
