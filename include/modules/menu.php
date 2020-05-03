@@ -2,7 +2,7 @@
 class Menu {
 	var $menu;
 	function Menu($menu) {
-		if($menu!="" and !is_numeric($menu) and substr($menu, 0, 1)=="m") {	
+		if($menu!="" and !is_numeric($menu)) {	
 			$this->BuildNavigation($menu);		
 		} else {
 			$this->BuildNavigation('mHome');	
@@ -66,7 +66,7 @@ class Menu {
                         $leftbox = PATH_LEFTBOX . "items.php";
                         $footer = PATH_FOOTER . "footer.php";
                 break 1; 
-		case "mLogIn":
+		case "signin":
 			$title="ChaHan Library - LogIn";
 			$content = PATH_CONTENT . "logIn.php";
 			$leftbox = PATH_LEFTBOX . "home.php";
