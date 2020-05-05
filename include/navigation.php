@@ -7,10 +7,10 @@
         <li class="nav-item text-nowrap">
         <?php
             global $session;
-            if (strpos($session->getData('LOGGEDIN'), 'true') == true) {
+            if (strpos($session->getData('SIGNEDIN'), 'true') == true) {
                 echo "<a class=\"nav-link\" href=\"?action=signout\">Sign out</a>";
             } else {
-                echo "<a class=\"nav-link\" href=\"?menu=signin\">Sign in</a>";
+                echo "<a class=\"nav-link\" href=\"?menu=mSignIn\">Sign in</a>";
             }
         ?>
         </li>

@@ -39,12 +39,16 @@ class Action {
                 {
                     $this->DeleteClient($_GET['PersonId']);
                 }
-		if($action=="aLogin") {
+		if($action=="aSignIn") {
 			if($security->dataintegrity($_REQUEST)==1) {
-			$this->Login($_POST['firstName'], $_POST['lastName'], $_POST['password']);	
+			$this->SignIn($_POST['email'], $_POST['password']);	
 			}  else { echo "XSS Attack"; exit; }  
 		}
-		
+		if($action=="aSignUp") {
+			if($security->dataintegrity($_REQUEST)==1) {
+			$this->SignUp($_POST['firstname'], $_POST['lastname'],$_POST['email'], $_POST['password']);	
+			}  else { echo "XSS Attack"; exit; }  
+		}
 		if($action=="aLogOut") {
 			if($security->dataintegrity($_REQUEST)==1) {
 			$this->LogOut();	
@@ -622,7 +626,7 @@ class Action {
 	
 	
 	
-	function Login($firstName, $lastName, $password) {	
+	function SignIn($email, $password) {	
 		//Globalize
 		global $header;
 		global $security;
@@ -631,33 +635,78 @@ class Action {
                 
 		$encryptet_pw = md5($password); 
                 
-		$iffound = $db->singlequery_dynamic("SELECT Id from logindata WHERE firstName='$firstName' AND lastName='$lastName' AND password='$encryptet_pw'");
+		$iffound = $db->singlequery_dynamic("SELECT id from user WHERE email='$email' AND password='$encryptet_pw'");
                 
 		if($iffound=='false') {
 			//user not found
-			$session->PutData('loginattemptmessage', 1);
-			$session->PutData('LOGGEDIN', "false");
-                        $header->Header('mLogIn');
-                        
+			$session->PutData('signinattemptmessage', 1);
+            $session->PutData('SIGNEDIN', "false");
+                        $header->setHeader('mSignIn');                        
 		} else {
-			//user found
-			$session->PutData('LOGGEDIN',"true");
-			$session->unsetData('loginattemptmessage');
-                        $header->Header('mSiteOne');
+            //user found
+           
+			$session->PutData('SIGNEDIN',"true");
+			$session->unsetData('signinattemptmessage');
+                        $header->setHeader('mHome');
 		}
 	}
-	
-	
+    
+    function SignUp($firstname, $lastname, $email, $password) {	
+		//Globalize
+		global $header;
+		global $security;
+		global $session;
+		global $db;
+                
+		$encryptet_pw = md5($password); 
+                
+		$iffound = $db->singlequery_dynamic("SELECT id from user WHERE email='$email'");
+                
+        //check if item exists
+		if($iffound=='false') {
+            //user not found
+            
+			$session->PutData('signinattemptmessage', 1);
+            $session->PutData('SIGNEDIN', "false");
+                        $header->setHeader('mSignIn');                        
+		} else {
+            //user found           
+			$session->PutData('SIGNEDIN',"true");
+			$session->unsetData('signinattemptmessage');
+                        $header->setHeader('mHome');
+        }
+        
+        if($session->getData('cFirstName')==1 AND $session->getData('cLastName')==1 AND $session->getData('cMobileNumber')==1)
+        {
+            $ifclientexists = $db->singlequery_dynamic("SELECT PersonId from person WHERE firstname='$firstname' AND lastname ='$lastname' AND mobilenumber='$mobilenumber'");
+        }
+        else
+        {
+        $header->Header('mcreateOrEditClient');
+        }
+        //sql //go back
+        if($ifclientexists=="true") {
+            $session->PutData('cClientExists',0);
+            $session->PutData('validation', 0);
+            $header->Header('mcreateOrEditClient');  
+        } else {
+            //user not found
+            $session->unsetDataCreateOrEditClient();
+            if($clientId != null)
+            {
+                $db->singlequery_dynamic("UPDATE person SET FirstName='$firstname', LastName='$lastname', MobileNumber=$mobilenumber WHERE PersonId = $clientId");
+            }
+            else{
+                $db->singlequery_dynamic("INSERT INTO person (FirstName, LastName, MobileNumber, Role)"
+            . "VALUES ('$firstname', '$lastname', '$mobilenumber', '$role')");
+            }
+            $header->Header('mClients');
+        }
+
+	}
 	
 }
+
 $actionObj = new Action($_REQUEST['action']);
-
 //REQUEST - both post and get
-
-
-
-
-
-
-
 ?>
