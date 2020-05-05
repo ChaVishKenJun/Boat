@@ -1,6 +1,6 @@
 <?php
 // Constants
-define("DB_SERVER", "bupte.enterpriselab.ch");
+define("DB_SERVER", "localhost");
 define("DB_USER", "DB2");
 define("DB_PASS", "emG3M4GB");
 define("DB_NAME", "DB2");

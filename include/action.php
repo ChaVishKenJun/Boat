@@ -660,8 +660,10 @@ class Action {
                 
 		$encryptet_pw = md5($password); 
                 
-		$iffound = $db->singlequery_dynamic("SELECT id from user WHERE email='$email'");
-                
+		$iffound = $db->single_dynamic_query("SELECT id from user WHERE email='$email'");
+        echo($iffound);
+        die();
+
         //check if item exists
 		if($iffound=='false') {
             //user not found
