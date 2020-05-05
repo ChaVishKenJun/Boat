@@ -3,16 +3,19 @@
 <?php
 $useralreadyexist = $session->getData('useralreadyexistmessage');
 $session->unsetData('useralreadyexistmessage');
-?>
-<?php 
-if ($useralreadyexist==1 and is_numeric($useralreadyexist)) { 
+
+$usercreated = $session->getData('usercreatedmessage');
+$session->unsetData('usercreatedmessage');
+
+if ($useralreadyexist==1 and is_numeric($useralreadyexist))
     echo "<b>User with the same e-mail address already exists.</b><br>";
-}
 else
-{
-    echo "<b>Account succesfully created.</b><br>";
     echo $useralreadyexist;
-}
+
+if ($usercreated==1 and is_numeric($usercreated))
+  echo "<b>Account successfully created.</b><br>";
+else
+  echo $useralreadyexist;
 ?>
 
 <form name="SignUpForm" enctype="multipart/form-data" action="?action=aSignUp" method="post">
