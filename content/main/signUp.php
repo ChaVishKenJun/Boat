@@ -1,20 +1,19 @@
 <h1>Sign up</h1>
 
 <?php
-$signinattempt = $session->getData('signinattemptmessage');
-$session->unsetData('signinattemptmessage');
+$useralreadyexist = $session->getData('useralreadyexistmessage');
+$session->unsetData('useralreadyexistmessage');
 ?>
 <?php 
-if ($signinattempt==1 and is_numeric($signinattempt)) { 
-    echo "<b>E-mail address and password not found!</b><br>";
+if ($useralreadyexist==1 and is_numeric($useralreadyexist)) { 
+    echo "<b>User with the same e-mail address already exists.</b><br>";
 }
 else
 {
-    echo $signinattempt;
+    echo "<b>Account succesfully created.</b><br>";
+    echo $useralreadyexist;
 }
 ?>
-
-
 
 <form name="SignUpForm" enctype="multipart/form-data" action="?action=aSignUp" method="post">
   <div class="form-group">

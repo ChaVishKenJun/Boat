@@ -665,43 +665,15 @@ class Action {
         //check if item exists
 		if($iffound=='false') {
             //user not found
-            
-			$session->PutData('signinattemptmessage', 1);
-            $session->PutData('SIGNEDIN', "false");
-                        $header->setHeader('mSignIn');                        
+            $session->unsetData('useralreadyexistmessage');
+            $db->singlequery_dynamic("INSERT INTO user (firstname, lastname, email, password)"
+            . "VALUES ('$firstname', '$lastname', '$email', '$encryptet_pw')");             
 		} else {
             //user found           
-			$session->PutData('SIGNEDIN',"true");
-			$session->unsetData('signinattemptmessage');
-                        $header->setHeader('mHome');
+            $session->PutData('useralreadyexistmessage', 1);
+            
         }
-        
-        if($session->getData('cFirstName')==1 AND $session->getData('cLastName')==1 AND $session->getData('cMobileNumber')==1)
-        {
-            $ifclientexists = $db->singlequery_dynamic("SELECT PersonId from person WHERE firstname='$firstname' AND lastname ='$lastname' AND mobilenumber='$mobilenumber'");
-        }
-        else
-        {
-        $header->Header('mcreateOrEditClient');
-        }
-        //sql //go back
-        if($ifclientexists=="true") {
-            $session->PutData('cClientExists',0);
-            $session->PutData('validation', 0);
-            $header->Header('mcreateOrEditClient');  
-        } else {
-            //user not found
-            $session->unsetDataCreateOrEditClient();
-            if($clientId != null)
-            {
-                $db->singlequery_dynamic("UPDATE person SET FirstName='$firstname', LastName='$lastname', MobileNumber=$mobilenumber WHERE PersonId = $clientId");
-            }
-            else{
-                $db->singlequery_dynamic("INSERT INTO person (FirstName, LastName, MobileNumber, Role)"
-            . "VALUES ('$firstname', '$lastname', '$mobilenumber', '$role')");
-            }
-            $header->Header('mClients');
-        }
+        $header->setHeader('mSignUp');
 
 	}
 	
