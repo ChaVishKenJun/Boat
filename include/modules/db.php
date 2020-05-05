@@ -23,7 +23,7 @@ class Database {
 		$this->db_connection->close();
 
 		if (!isset($result_array)) {
-			return false;
+			return 'false';
 		}
 
 		return array($result_array, $conditions);

@@ -49,9 +49,9 @@ class Action {
 			$this->SignUp($_POST['firstname'], $_POST['lastname'],$_POST['email'], $_POST['password']);	
 			}  else { echo "XSS Attack"; exit; }  
 		}
-		if($action=="aLogOut") {
+		if($action=="aSignOut") {
 			if($security->dataintegrity($_REQUEST)==1) {
-			$this->LogOut();	
+			$this->SignOut();	
 			}  else { echo "XSS Attack"; exit; }  
 		}
 		
@@ -617,11 +617,11 @@ class Action {
                 $header->Header('mItems');  
 		}
         }        
-	function LogOut() {
+	function SignOut() {
 		global $session; 
 		global $header;
-		$session->PutData('LOGGEDIN',"false");
-		$header->Header('mSiteOne');
+		$session->PutData('SIGNEDIN',"false");
+		$header->setHeader('mHome');
 	}
 	
 	
@@ -635,8 +635,8 @@ class Action {
                 
 		$encryptet_pw = md5($password); 
                 
-		$iffound = $db->singlequery_dynamic("SELECT id from user WHERE email='$email' AND password='$encryptet_pw'");
-                
+		$iffound = $db->single_dynamic_query("SELECT id from user WHERE email='$email' AND password='$encryptet_pw'");
+             
 		if($iffound=='false') {
 			//user not found
 			$session->PutData('signinattemptmessage', 1);
@@ -661,19 +661,18 @@ class Action {
 		$encryptet_pw = md5($password); 
                 
 		$iffound = $db->single_dynamic_query("SELECT id from user WHERE email='$email'");
-        echo($iffound);
-        die();
 
         //check if item exists
 		if($iffound=='false') {
             //user not found
+            $session->PutData('usercreatedmessage', 1);
             $session->unsetData('useralreadyexistmessage');
-            $db->singlequery_dynamic("INSERT INTO user (firstname, lastname, email, password)"
+            $db->single_dynamic_query("INSERT INTO user (firstname, lastname, email, password)"
             . "VALUES ('$firstname', '$lastname', '$email', '$encryptet_pw')");             
 		} else {
-            //user found           
+            //user found      
             $session->PutData('useralreadyexistmessage', 1);
-            
+            $session->unsetData('usercreatedmessage');            
         }
         $header->setHeader('mSignUp');
 
