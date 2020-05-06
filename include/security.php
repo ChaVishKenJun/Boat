@@ -44,25 +44,22 @@ class Security {
 		}
 		
 		function dataintegrity($data) {
-		
-	    	$datakey=array_values($data);
-			// alert("Hello! I am an alert box!!");
-			$datacount=count($datakey);
-			$count=0;
-			while($count<=$datacount-1) {
-				if($datakey[$count]!="") { 
-				if(!preg_match('/^[\pL\pN\pZ\p{Pc}\p{Pd}\p{Po}]++$/uD', $datakey[$count])) { return 0; } 	}			
+			$datakey = array_values($data);
+			$datacount = count($datakey);
+			$count = 0;
+			
+			while ($count <= $datacount - 1) {
+				if ($datakey[$count] != "") {
+					if (!preg_match('/^[\pL\pN\pZ\p{Pc}\p{Pd}\p{Po}]++$/uD', $datakey[$count])) {
+						return 0;
+					}
+				}			
 				$count++;
 			}
-			
-			
+
 			return 1;
 		}
-		
-
-	
 }
+
 $security = new Security;
-
-
 ?>

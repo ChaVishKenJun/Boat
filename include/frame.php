@@ -17,28 +17,10 @@
   </head>
   <body class="d-flex flex-column h-100">
     <?php include (PATH_INC . "navigation.php"); ?>
+
+    <?php  include $GLOBALS['leftbox']; ?>
     
     <div class="container-fluid">
-
-      <nav class="col-md-2 d-none d-md-block bg-light sidebar">
-        <div class="sidebar-sticky">
-          <ul class="nav flex-column">
-            <?php include (PATH_INC . "group.php"); ?>
-          </ul>
-        </div>
-      </nav>
-
-      <!--<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-left">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav">
-            <?php //include (PATH_INC . "group.php"); ?>
-          </ul>
-        </div>
-      </nav>-->
-      
       <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
         <?php  include $GLOBALS['content']; ?>
       </main>

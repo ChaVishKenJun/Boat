@@ -1,67 +1,75 @@
 <?php
 class Action {
-	var $action;
-	
-	function Action($action) { // CLASS CONSTRUCTOR (HANDLER)
-		global $security;
-		
-		//ACTION REQUEST
-	
-                if($action=="aCreateOrEditClient") {
-			$this->CreateOrEditClient($_POST['personId'],$_POST['firstname'],$_POST['lastname'],$_POST['mobilenumber']);
-		}
-		if($action=="aCreateOrEditItem") {
-			$this->CreateOrEditItem( $_POST['itemId'],$_POST['title'],$_POST['type'],$_POST['firstname'],$_POST['lastname'],$_POST['category']);
-		}
-		if($action=="aBorrowItem") {
-			$this->BorrowItem($_POST['title'],$_POST['dateFrom'],$_POST['dateTo'],$_POST['firstName'],$_POST['lastName']);
-                }
-                
-		if($action=="aReturnItem") {
-			$this->ReturnItem($_POST['title'],$_POST['type'],$_POST['firstName'],$_POST['lastName']);
-                }
-                if($action=="aReserveItem") {
-			$this->ReserveItem($_POST['title'],$_POST['dateFrom'],$_POST['dateTo'],$_POST['firstName'],$_POST['lastName']);
-                }
-                if($action == "aEditClient" && $_GET['PersonId'])
-                {
+    var $action;
+    
+    // Constructor
+    function Action($action) {
+        global $security;
+        
+        switch ($action) {
+            case "aCreateOrEditClient":
+                $this->CreateOrEditClient($_POST['personId'], $_POST['firstname'], $_POST['lastname'], $_POST['mobilenumber']);
+            break;
+            case "aCreateOrEditItem":
+                $this->CreateOrEditItem($_POST['itemId'], $_POST['title'], $_POST['type'], $_POST['firstname'], $_POST['lastname'], $_POST['category']);
+            break;
+            case "aBorrowItem":
+                $this->BorrowItem($_POST['title'], $_POST['dateFrom'], $_POST['dateTo'], $_POST['firstName'], $_POST['lastName']);
+            break;
+            case "aReturnItem":
+                $this->ReturnItem($_POST['title'], $_POST['type'], $_POST['firstName'], $_POST['lastName']);
+            break;
+            case "aReserveItem";
+			    $this->ReserveItem($_POST['title'], $_POST['dateFrom'], $_POST['dateTo'], $_POST['firstName'], $_POST['lastName']);
+            break;
+            case "aEditClient":
+                if ($_GET['PersonId']) {
                     $this->EditClient($_GET['PersonId']);
                 }
-		if($action == "aEditItem" && $_GET['ItemId'])
-                {
+            break;
+            case "aEditItem":
+                if ($_GET['ItemId']) {
                     $this->EditItem($_GET['ItemId']);
                 }
-                if($action == "aDeleteItem" && $_GET['ItemId'])
-                {
+            break;
+            case "aDeleteItem":
+                if ($_GET['ItemId']) {
                     $this->DeleteItem($_GET['ItemId']);
                 }
-                if($action == "aDeleteClient" && $_GET['PersonId'])
-                {
+            break;
+            case "aDeleteClient":
+                if ($_GET['PersonId']) {
                     $this->DeleteClient($_GET['PersonId']);
                 }
-		if($action=="aSignIn") {
-			if($security->dataintegrity($_REQUEST)==1) {
-			$this->SignIn($_POST['email'], $_POST['password']);	
-			}  else { echo "XSS Attack"; exit; }  
-		}
-		if($action=="aSignUp") {
-			if($security->dataintegrity($_REQUEST)==1) {
-			$this->SignUp($_POST['firstname'], $_POST['lastname'],$_POST['email'], $_POST['password']);	
-			}  else { echo "XSS Attack"; exit; }  
-		}
-		if($action=="aSignOut") {
-			if($security->dataintegrity($_REQUEST)==1) {
-			$this->SignOut();	
-			}  else { echo "XSS Attack"; exit; }  
-		}
-		
-		//ACTION REQUEST ENd
-	}
-	
-	/////////// funktionen
-        
-        
-        function CreateOrEditClient($clientId,$firstname,$lastname,$mobilenumber) {
+            break;
+            case "aSignUp":
+                if ($security->dataintegrity($_REQUEST) == 1) {
+                    $this->signUp($_POST['firstname'], $_POST['lastname'], $_POST['email'], $_POST['password']);
+                } else {
+                    echo "XSS Attack";
+                    exit;
+                }
+            break;
+            case "aSignIn":
+                if ($security->dataintegrity($_REQUEST) == 1) {
+                    $this->signIn($_POST['email'], $_POST['password']);	
+                } else {
+                    echo "XSS Attack";
+                    exit;
+                }
+            break;
+            case "aSignOut":
+                if ($security->dataintegrity($_REQUEST) == 1) {
+                    $this->signOut();
+                } else {
+                    echo "XSS Attack";
+                    exit;
+                }  
+            break;
+        }
+    }
+    
+    function CreateOrEditClient($clientId,$firstname,$lastname,$mobilenumber) {
             //global
             global $session; 
             global $header;
@@ -616,42 +624,40 @@ class Action {
                 
                 $header->Header('mItems');  
 		}
-        }        
-	function SignOut() {
-		global $session; 
-		global $header;
-		$session->PutData('SIGNEDIN',"false");
-		$header->setHeader('mHome');
-	}
-	
-	
-	
-	function SignIn($email, $password) {	
-		//Globalize
+        }
+    
+	function signIn($email, $password) {
 		global $header;
 		global $security;
 		global $session;
-		global $db;
-                
-		$encryptet_pw = md5($password); 
-                
-		$iffound = $db->single_dynamic_query("SELECT id from user WHERE email='$email' AND password='$encryptet_pw'");
-             
-		if($iffound=='false') {
-			//user not found
-			$session->PutData('signinattemptmessage', 1);
-            $session->PutData('SIGNEDIN', "false");
-                        $header->setHeader('mSignIn');                        
-		} else {
-            //user found
-           
-			$session->PutData('SIGNEDIN',"true");
-			$session->unsetData('signinattemptmessage');
-                        $header->setHeader('mHome');
-		}
+        global $db;
+        
+        $encryptet_pw = md5($password);
+
+        $isFound = $db->single_dynamic_query("SELECT id FROM user WHERE email='$email' AND password='$encryptet_pw'");
+
+        if ($isFound == "false") {
+            $session->putData("SignInAttemptMessage", 1);
+            $session->putData("SignedIn", "false");
+            $header->setHeader("mSignIn");
+        } else {
+			$session->unsetData("SignInAttemptMessage");
+            $session->putData("SignedIn", "true");
+            $header->setHeader("mHome");
+        }
 	}
+
+	function signOut() {
+		global $session; 
+        global $header;
+
+		$session->putData("SignInMessage", "You are succesfully signed out.");
+        
+		$session->putData("SignedIn", "false");
+		$header->setHeader("mSignIn");
+    }
     
-    function SignUp($firstname, $lastname, $email, $password) {	
+    function signUp($firstname, $lastname, $email, $password) {	
 		//Globalize
 		global $header;
 		global $security;
@@ -681,5 +687,4 @@ class Action {
 }
 
 $actionObj = new Action($_REQUEST['action']);
-//REQUEST - both post and get
 ?>

@@ -1,9 +1,17 @@
-<h1>Sign in</h1>
+<h1>Sign In</h1>
+
 <?php
-  $signinattempt = $session->getData('signinattemptmessage');
-  $session->unsetData('signinattemptmessage');
-  if ($signinattempt==1 and is_numeric($signinattempt)) 
-      echo "<b>E-mail address and password not found!</b><br>";
+  $signInAttempt = $session->getData('SignInAttemptMessage');
+  $session->unsetData('SignInAttemptMessage');
+  if (is_numeric($signInAttempt) and $signInAttempt == 1) {
+    echo "<p>E-mail address and password not found!</p>";
+  }
+  
+  $signInMessage = $session->getData('SignInMessage');
+  $session->unsetData('SignInMessage');
+  if (!empty($signInMessage)) {
+    echo "<p>$signInMessage</p>";
+  }
 ?>
 
 <form name="SignInForm" enctype="multipart/form-data" action="?action=aSignIn" method="post">
