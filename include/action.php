@@ -641,8 +641,9 @@ class Action {
             $session->putData("SignedIn", "false");
             $header->setHeader("mSignIn");
         } else {
-			$session->unsetData("SignInAttemptMessage");
+            $session->unsetData("SignInAttemptMessage");
             $session->putData("SignedIn", "true");
+            $session->putData("UserId", $isFound[0][0][0]);
             $header->setHeader("mHome");
         }
 	}
@@ -651,9 +652,10 @@ class Action {
 		global $session; 
         global $header;
 
-		$session->putData("SignInMessage", "You are succesfully signed out.");
+		$session->putData("SignInMessage", "You are succesfully  out.");
         
-		$session->putData("SignedIn", "false");
+        $session->putData("SignedIn", "false");
+        $session->unsetData("UserId");
 		$header->setHeader("mSignIn");
     }
     
@@ -671,16 +673,15 @@ class Action {
         //check if item exists
 		if($iffound=='false') {
             //user not found
-            $session->PutData('usercreatedmessage', 1);
             $session->unsetData('useralreadyexistmessage');
             $db->single_dynamic_query("INSERT INTO user (firstname, lastname, email, password)"
-            . "VALUES ('$firstname', '$lastname', '$email', '$encryptet_pw')");             
-		} else {
-            //user found      
+            . "VALUES ('$firstname', '$lastname', '$email', '$encryptet_pw')");
+            $session->putData("SignInMessage", "You are successfully signed up.") ;
+            $header->setHeader('mSignIn');
+		} else { 
             $session->PutData('useralreadyexistmessage', 1);
-            $session->unsetData('usercreatedmessage');            
+            $header->setHeader('mSignUp');
         }
-        $header->setHeader('mSignUp');
 
 	}
 	

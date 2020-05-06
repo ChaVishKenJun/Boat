@@ -4,9 +4,6 @@
   $useralreadyexist = $session->getData('useralreadyexistmessage');
   $session->unsetData('useralreadyexistmessage');
 
-  $usercreated = $session->getData('usercreatedmessage');
-  $session->unsetData('usercreatedmessage');
-
   if ($useralreadyexist==1 and is_numeric($useralreadyexist))
       echo "<b>User with the same e-mail address already exists.</b><br>";
 
