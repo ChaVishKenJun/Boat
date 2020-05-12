@@ -64,20 +64,19 @@
               <div class="col-sm-10">
                 <input name="members" class="form-control"  disabled />
               </div>
-            </div>
-          </form>
-      </div>
-      <div class="modal-footer">
-      <?php
-        $groupalreadyexist = $session->getData('groupalreadyexistmessage');
-        $session->unsetData('groupalreadyexistmessage');
+        </div>
+        <div class="modal-footer">
+        <?php
+          $groupalreadyexist = $session->getData('groupalreadyexistmessage');
+          $session->unsetData('groupalreadyexistmessage');
 
-        if ($groupalreadyexist==1 and is_numeric($groupalreadyexist))
-            echo "<b>Group with the same name already exists.</b><br>";
-      ?>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary">Create</button>
-      </div>
+          if ($groupalreadyexist==1 and is_numeric($groupalreadyexist))
+              echo "<b>Group with the same name already exists.</b><br>";
+        ?>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Create</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
