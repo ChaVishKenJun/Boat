@@ -54,7 +54,6 @@ $(document).ready(function () {
             $('.dropdown').remove();
         }
     });
-
 });
 
 function selectUser(id, firstname, lastname, email) {
@@ -88,4 +87,9 @@ function removeUser(id) {
     $('#userIds').val(ids.join(','));
 
     $('.badge[user-id=' + id + ']').remove();
+}
+
+function openGroup(sender) {
+    $('.nav-link').removeClass('active');
+    $(sender).addClass('active');
 }

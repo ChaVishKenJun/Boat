@@ -737,6 +737,11 @@ class Action {
             $db->addUserToGroup($groupId, $userId);
         }
 
+        // If the current user is not in the list, add the user too
+        if (!in_array($session->getData("UserId"), $userIds)) {
+            $db->addUserToGroup($groupId, $session->getData("UserId"));
+        }
+
         // Reload the page
         $header->setHeader("mHome");
     }

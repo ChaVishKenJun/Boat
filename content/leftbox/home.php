@@ -22,7 +22,7 @@
                         $result = $db->single_dynamic_query("SELECT * FROM groupchat WHERE id=$groupId[0]");
                         
                         foreach ($result[0] as $group) {
-                            echo '<a class="nav-link" href="#" group-id="' . $group[0] . '">';
+                            echo '<a class="nav-link" href="#" group-id="' . $group[0] . '" onclick=openGroup(this)>';
                             echo '<span>' . $group[1] . '</span>';
                             echo '</a>';
                         }
