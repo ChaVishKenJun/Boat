@@ -45,33 +45,33 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
-        <form action="?action=aCreateGroup" method="post">
-            <div class="form-group row">
-                <label for="inputGroupName" class="col-sm-2 col-form-label">Name</label>
-                <div class="col-sm-10">
-                <input name="name" type="text" class="form-control" id="inputGroupName" required>
-                </div>
-            </div>
-            <div class="form-group row">
-              <label for="userQuery">Members</label>
-              <div>
-                <input id="userQuery" />
+      <form enctype="multipart/form-data" action="?action=aCreateGroup" method="post">
+        <div class="modal-body">
+              <div class="form-group row">
+                  <label for="inputGroupName" class="col-sm-2 col-form-label">Name</label>
+                  <div class="col-sm-10">
+                  <input name="name" type="text" class="form-control" id="inputGroupName" required>
+                  </div>
               </div>
-            </div>
-          </form>
-      </div>
-      <div class="modal-footer">
-      <?php
-        $groupalreadyexist = $session->getData('groupalreadyexistmessage');
-        $session->unsetData('groupalreadyexistmessage');
+              <div class="form-group row">
+                <label for="userQuery">Members</label>
+                <div>
+                  <input id="userQuery" />
+                </div>
+              </div>
+        </div>
+        <div class="modal-footer">
+        <?php
+          $groupalreadyexist = $session->getData('groupalreadyexistmessage');
+          $session->unsetData('groupalreadyexistmessage');
 
-        if ($groupalreadyexist==1 and is_numeric($groupalreadyexist))
-            echo "<b>Group with the same name already exists.</b><br>";
-      ?>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary">Create</button>
-      </div>
+          if ($groupalreadyexist==1 and is_numeric($groupalreadyexist))
+              echo "<b>Group with the same name already exists.</b><br>";
+        ?>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Create</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

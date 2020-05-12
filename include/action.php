@@ -694,14 +694,16 @@ class Action {
 		global $session;
         global $db;
         
-		$iffound = $db->single_dynamic_query("SELECT id from group WHERE group='$name'");
+		$iffound = $db->single_dynamic_query("SELECT id from groupchat WHERE name='$name'");
 
         //check if item exists
 		if($iffound=='false') {
             //group not found
             $session->unsetData('groupalreadyexistmessage');
-            $db->single_dynamic_query("INSERT INTO group (name)"
+            $db->single_dynamic_query("INSERT INTO groupchat (name)"
             . "VALUES ('$name')");
+    		$header->setHeader("mHome");
+
 		} else { 
             $session->PutData('groupalreadyexistmessage', 1);
         }
