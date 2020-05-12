@@ -42,6 +42,9 @@ class Action {
                     $this->DeleteClient($_GET['PersonId']);
                 }
             break;
+            case "aCreateGroup":
+                $this->createGroup($_POST['name']);
+            break;
             case "aSignUp":
                 if ($security->dataintegrity($_REQUEST) == 1) {
                     $this->signUp($_POST['firstname'], $_POST['lastname'], $_POST['email'], $_POST['password']);
@@ -681,6 +684,26 @@ class Action {
 		} else { 
             $session->PutData('useralreadyexistmessage', 1);
             $header->setHeader('mSignUp');
+        }
+
+    }
+    
+    function createGroup($name) {	
+		//Globalize
+		global $header;
+		global $session;
+        global $db;
+        
+		$iffound = $db->single_dynamic_query("SELECT id from group WHERE group='$name'");
+
+        //check if item exists
+		if($iffound=='false') {
+            //group not found
+            $session->unsetData('groupalreadyexistmessage');
+            $db->single_dynamic_query("INSERT INTO group (name)"
+            . "VALUES ('$name')");
+		} else { 
+            $session->PutData('groupalreadyexistmessage', 1);
         }
 
 	}
