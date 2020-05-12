@@ -69,6 +69,9 @@ class Action {
                     exit;
                 }  
             break;
+            case "aQueryUser":
+                $this->queryUser($_GET["query"]);
+            break;
         }
     }
     
@@ -687,6 +690,33 @@ class Action {
         }
 
     }
+
+    /**
+     * 
+     * @param string $query 
+     * @return
+     */
+    function queryUser($query) {
+        $result = '';
+        
+        global $db;        
+        $users = $db->single_dynamic_query("SELECT id, firstname, lastname, email FROM user WHERE firstname LIKE '%$query%' OR lastname LIKE '%$query%' OR email LIKE '%$query'");
+        $fields = $users[1]['con'][0];
+        
+        foreach ($users[0] as $user) {
+            $field = 0;
+            while($field <= $fields - 1) {
+                $result .= $user[$field];
+                if ($field != $fields - 1) {
+                    $result .= ',';
+                }
+		        $field++;
+            }
+            $result .= '\n';
+        }
+        echo $result;
+        exit;
+    }
     
     function createGroup($name) {	
 		//Globalize
@@ -706,8 +736,7 @@ class Action {
             $session->PutData('groupalreadyexistmessage', 1);
         }
 
-	}
-	
+    }
 }
 
 $actionObj = new Action($_REQUEST['action']);

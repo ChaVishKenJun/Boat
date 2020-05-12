@@ -50,13 +50,19 @@
             <div class="form-group row">
                 <label for="inputGroupName" class="col-sm-2 col-form-label">Name</label>
                 <div class="col-sm-10">
-                <input name="name" type="text" class="form-control" id="inputGroupName" required>
+                  <input name="name" type="text" class="form-control" id="inputGroupName" required>
                 </div>
             </div>
             <div class="form-group row">
-              <label for="userQuery">Members</label>
-              <div>
-                <input id="userQuery" />
+              <label for="userQuery" class="col-sm-2 col-form-label">Add Member</label>
+              <div class="col-sm-10">
+                <input id="userQuery" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="inputGroupName" class="col-sm-2 col-form-label">Members</label>
+              <div class="col-sm-10">
+                <input name="members" class="form-control"  disabled />
               </div>
             </div>
           </form>
