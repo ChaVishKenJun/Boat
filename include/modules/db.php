@@ -145,6 +145,13 @@ class Database {
 		$this->db_connection->close();
 	}
 
+	function updateNotificationsIsReadToRead($userId) {
+		$this->open_db();
+		$sql="UPDATE notification SET is_read =1 WHERE user_id = $userId";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
 	/* Static Functions - Examples */
 	function getid_detail($condition) {
 		//its a static prepared and encryptet sql SELECT
