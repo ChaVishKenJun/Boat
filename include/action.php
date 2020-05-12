@@ -42,8 +42,8 @@ class Action {
                     $this->DeleteClient($_GET['PersonId']);
                 }
             break;
-            case "aCreateGroup":
-                $this->createGroup($_POST['name']);
+            case "aCreateGroup":                
+                $this->createGroup($_POST['name'], $_POST["users"]);
             break;
             case "aSignUp":
                 if ($security->dataintegrity($_REQUEST) == 1) {
@@ -697,47 +697,48 @@ class Action {
      * @return
      */
     function queryUser($query) {
-        $result = '';
-        
-        global $db;        
+        global $db;  
+
+        $result = '';      
         $users = $db->single_dynamic_query("SELECT id, firstname, lastname, email FROM user WHERE firstname LIKE '%$query%' OR lastname LIKE '%$query%' OR email LIKE '%$query'");
-        $fields = $users[1]['con'][0];
-        
-        foreach ($users[0] as $user) {
-            $field = 0;
-            while($field <= $fields - 1) {
-                $result .= $user[$field];
-                if ($field != $fields - 1) {
-                    $result .= ',';
+        if ($users != "false") {
+            $fields = $users[1]['con'][0];
+            for ($i = 0; $i < count($users[0]); $i++) {
+                $field = 0;
+                while ($field <= $fields - 1) {
+                    $result .= $users[0][$i][$field];
+                    if ($field != $fields - 1) {
+                        $result .= ',';
+                    }
+                    $field++;
                 }
-		        $field++;
+                if ($i != count($users[0]) - 1) {
+                    $result .= '\n';
+                }
             }
-            $result .= '\n';
+            echo $result;
+            exit;
+        } else {
+            echo '';
+            exit;
         }
-        echo $result;
-        exit;
     }
     
-    function createGroup($name) {	
-		//Globalize
+    function createGroup($name, $userIds) {
 		global $header;
 		global $session;
         global $db;
         
-		$iffound = $db->single_dynamic_query("SELECT id from groupchat WHERE name='$name'");
+        // Create a group and get id of it
+        $groupId = $db->createGroup($name);
 
-        //check if item exists
-		if($iffound=='false') {
-            //group not found
-            $session->unsetData('groupalreadyexistmessage');
-            $db->single_dynamic_query("INSERT INTO groupchat (name)"
-            . "VALUES ('$name')");
-    		$header->setHeader("mHome");
-
-		} else { 
-            $session->PutData('groupalreadyexistmessage', 1);
+        // Add users to the group
+        foreach (explode(',', $userIds) as &$userId) {
+            $db->addUserToGroup($groupId, $userId);
         }
 
+        // Reload the page
+        $header->setHeader("mHome");
     }
 }
 

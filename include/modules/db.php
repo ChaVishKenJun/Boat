@@ -119,8 +119,33 @@ class Database {
 		return $execution_count;
 	}
 
+	/* Static Functions */
+
+	/**
+	 * This function creates a new group with specified name in the database.
+	 * @param string $name name of the new group
+	 * @return id of created group
+	 */
+	function createGroup($name) {
+		$this->open_db();
+		$sql="INSERT INTO groupchat (name)" . "VALUES ('$name')";
+		$this->db_connection->query($sql);
+		$groupId = $this->db_connection->insert_id;
+		$this->db_connection->close();
+		return $groupId;
+	}
+
+	/**
+	 * 
+	 */
+	function addUserToGroup($groupId, $userId) {
+		$this->open_db();
+		$sql="INSERT INTO user_group (user_id, group_id) VALUES ($userId, $groupId)";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
 	/* Static Functions - Examples */
-	
 	function getid_detail($condition) {
 		//its a static prepared and encryptet sql SELECT
 		$sql="SELECT id from detail where id=$condition";
