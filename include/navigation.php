@@ -8,9 +8,11 @@
           <a class="nav-link" href="#" data-target="#notifcationModal" data-toggle="modal">
           <?php
           global $session;
+          $userId = $session->getData("UserId");
+          global $db;
+
           if ($session->getData('SignedIn') == 'true') {
-            global $db;
-            $unreadNotifications = $db->single_dynamic_query('SELECT message,message_id, date FROM notification WHERE is_read = 0');
+            $unreadNotifications = $db->single_dynamic_query('SELECT message, message_id, date FROM notification WHERE is_read = 0 AND user_id='.$userId);
             //no notifications
             if($unreadNotifications=='false') {
               echo "<svg class=\"bi bi-bell\" width=\"1em\" height=\"1em\" viewBox=\"0 0 16 16\" fill=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\">
@@ -55,7 +57,7 @@
       <div class="modal-body">
         <?php
           //no notifications
-          $notifications = $db->single_dynamic_query('SELECT message,message_id, date FROM notification');
+          $notifications = $db->single_dynamic_query('SELECT message,message_id, date FROM notification WHERE user_id ='.$userId);
           if($notifications=='false') {
             echo "<div>No Notifications found.</div>";
           }
@@ -79,7 +81,7 @@
             
             //change to read
             global $session;
-            $db->updateNotificationsIsReadToRead($session->getData("UserId"));
+            $db->updateNotificationsIsReadToRead($userId);
           }
         ?>        
       </div>
