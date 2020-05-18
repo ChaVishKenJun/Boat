@@ -135,6 +135,21 @@ class Database {
 		return $groupId;
 	}
 
+	function sendMessage($groupId, $userId, $message) {
+		$date = date("Y-m-d H:i:s");
+
+		$this->open_db();
+		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
+		$this->db_connection->query($sql);
+		$messageId = $this->db_connection->insert_id;
+
+		$sql = "INSERT INTO message_text (id, data) VALUES ('$messageId', '$message')";
+		$this->db_connection->query($sql);
+
+		$this->db_connection->close();
+		return $messageId;
+	}
+
 	/**
 	 * 
 	 */

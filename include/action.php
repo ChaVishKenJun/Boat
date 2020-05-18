@@ -72,6 +72,15 @@ class Action {
             case "aQueryUser":
                 $this->queryUser($_GET["query"]);
             break;
+            case "aOpenGroup":
+                $this->openGroup($_GET["groupId"]);
+            break;
+            case "aSendMessage":
+                $this->sendMessage($_GET["message"]);
+            break;
+            case "aLoadMessages":
+                $this->loadMessages();
+            break;
         }
     }
     
@@ -728,22 +737,87 @@ class Action {
 		global $header;
 		global $session;
         global $db;
-        
-        // Create a group and get id of it
+
+        $userIdArray = explode(',', $userIds);
+
+        // Create a group and get the id of it
         $groupId = $db->createGroup($name);
 
         // Add users to the group
-        foreach (explode(',', $userIds) as &$userId) {
+        foreach ($userIdArray as &$userId) {
             $db->addUserToGroup($groupId, $userId);
         }
 
         // If the current user is not in the list, add the user too
-        if (!in_array($session->getData("UserId"), $userIds)) {
+        if (!in_array($session->getData("UserId"), $userIdArray)) {
             $db->addUserToGroup($groupId, $session->getData("UserId"));
         }
 
         // Reload the page
         $header->setHeader("mHome");
+    }
+
+    function openGroup($groupId) {
+        global $session;
+        $session->putData("GroupId", $groupId);
+        exit;
+    }
+
+    function sendMessage($message) {
+        global $session;
+        global $db;
+        
+        $userId = $session->getData("UserId");
+        $groupId = $session->getData("GroupId");
+
+        if (isset($groupId) && isset($userId)) {
+            $messageId = $db->sendMessage($groupId, $userId, $message);
+            echo $messageId;
+            exit;
+        }
+    }
+
+    function loadMessages() {
+        global $session;
+        global $db;
+        
+        // TODO: Security - Check if user is in the group
+
+        $groupId = $session->getData("GroupId");
+        $userId = $session->getData("UserId");
+
+        if (isset($groupId)) {
+            $messages = $db->single_dynamic_query("SELECT user.id, user.firstname, user.lastname, message.date, message.id, message_text.data FROM message INNER JOIN user ON message.user_id = user.id INNER JOIN message_text ON message.id = message_text.id WHERE groupchat_id = '$groupId' ORDER BY message.date");
+
+            if ($messages != "false") {
+                $result = '';
+
+                for ($i = 0; $i < count($messages[0]); $i++) {
+                    for ($j = 0; $j < count($messages[0][$i]); $j++) {
+                        if ($j == 0) {
+                            if ($messages[0][$i][0] == $userId) {
+                                $result .= "true";
+                            } else {
+                                $result .= "false";
+                            }
+                        } else {
+                            $result .= $messages[0][$i][$j];
+                        }
+                        
+                        if ($j != count($messages[0][$i]) - 1) {
+                            $result .= ',';
+                        }
+                    }
+                    if ($i != count($messages[0]) - 1) {
+                        $result .= '\n';
+                    }
+                }
+                echo $result;
+            } else {
+                echo "No message to display.";
+            }
+            exit;
+        }
     }
 }
 

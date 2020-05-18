@@ -1,3 +1,15 @@
+var loader;
+var scrolledDown = false;
+
+$('#input form').on('keyup keypress', function(e) {
+    var keyCode = e.keyCode || e.which;
+    if (keyCode === 13) { 
+      e.preventDefault();
+      $($(this).find('button')).click();
+      return false;
+    }
+  });
+
 $(document).ready(function () {
     $('#userQuery').on('keyup keydown paste', function () {
         var query = $(this).val();
@@ -54,15 +66,13 @@ $(document).ready(function () {
             $('.dropdown').remove();
         }
     });
+
 });
 
-function selectUser(id, firstname, lastname, email) {
-    if ($('#userIds').val() != '') {
-        $('#userIds').val($('#userIds').val() + ',');
-    }
-    
+function selectUser(id, firstname, lastname, email) {   
+    // TODO: Remove email 
     if (!($('#userIds').val()).split(',').includes(id)) {
-        $('#userIds').val($('#userIds').val() + id);
+        $('#userIds').val($('#userIds').val() + id + ',');
 
         var memberBadge = '';
         memberBadge += '<div user-id="' + id + '" class="badge badge-primary text-wrap align-middle" style="width: 6rem; margin: 5px;">';
@@ -90,6 +100,101 @@ function removeUser(id) {
 }
 
 function openGroup(sender) {
-    $('.nav-link').removeClass('active');
+    scrolledDown = false;
+
+    $(sender).parent().find('.nav-link').removeClass('active');
+    $($(sender).parent().find('.nav-link')[0]).addClass('active');
     $(sender).addClass('active');
+
+    var groupId = $(sender).attr('group-id');
+
+    if (groupId != null) {
+        var xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                $('#messages').html(this.responseText);
+                $('#input').removeAttr("hidden");
+                
+                loadMessages();
+                loader = setInterval(loadMessages, 1000);
+            }
+        };
+        
+        xmlhttp.open("GET", "?action=aOpenGroup&groupId=" + groupId, true);
+        xmlhttp.send();
+    }
+}
+
+function sendMessage(sender) {
+    var message = $(sender).parent().parent().find('input').val();
+
+    if (message != '') {
+        var xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+            }
+        };
+        
+        xmlhttp.open("GET", '?action=aSendMessage&message=' + message, true);
+        xmlhttp.send();
+    }
+
+    $(sender).parent().parent().find('input').val('');
+}
+
+function loadMessages() {
+    $.ajax({
+        url: "?action=aLoadMessages",
+        type: "get"
+    })
+    .done(function (response, textStatus, jqXHR) {
+        $('#messages').html(formatMessages(response));
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        console.log("done");
+        if (scrolledDown == false) {
+
+            $("html, body").scrollTop($(document).height());
+            scrolledDown = true;
+        }
+    });
+}
+
+function formatMessages(rawMessages) {
+    // TODO: Pull messages down
+
+    var result = '';
+    rawMessages.split('\\n').forEach(message => {
+        var fields = message.split(',');
+
+        result += "<div message-id='" + fields[4] + "' class='message container-fluid align-text-bottom'>";
+
+        if (fields[0] != "true") {
+            result += "<div class='row'>";
+            result += "<div class='col'>";
+            result += "<span class='user'>" + fields[1] + ' ' + fields[2] + "</span>";
+            result += "</div>";
+            result += "</div>";
+        }
+
+        result += "<div class='row'>";
+        result += "<div class='col'>";
+        result += "<span class='bg-light px-3 py-1 m-1 rounded" + (fields[0] == "true" ? " float-right" : " float-left") + "'>";
+        result += "<span class='data'>" + fields[5] + "</span>";
+        result += "</div>";
+        result += "</div>";
+        result += "<div class='row mb-2'>"
+        result += "<div class='col'>";
+        result += "<span class='date badge text-muted font-weight-light" + (fields[0] == "true" ? " float-right" : "") + "'>" + fields[3] + "</span>";
+        result += "</span>";
+        result += "</div>";
+        result += "</div>";
+        result += "</div>";
+    });
+    return result;
 }
