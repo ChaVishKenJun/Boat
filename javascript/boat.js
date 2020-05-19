@@ -92,21 +92,35 @@ $(document).ready(function () {
     });
 
     //notification bell
+    // var xmlhttp = new XMLHttpRequest();
+    // xmlhttp.onreadystatechange = function() {
+    //     if (this.readyState == 4 && this.status == 200) {
+    //         $('#navigation-link').html(this.responseText);
+            
+    //         loadNotificationBell();
+    //         loader = setInterval(loadNotificationBell, 1000);
+    //     }
+    // };    
+    // xmlhttp.open("GET", "?action=aLoadNotificationBell", true);
+    // xmlhttp.send();
+
+    //notifications
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            $('#navigation-link').html(this.responseText);
+            //$('#notifications').html(this.responseText);
             
-            loadNotificationBell();
-            loader = setInterval(loadNotificationBell, 1000);
+            loadNotifications();
+            loader = setInterval(loadNotifications, 1000);
         }
-    };
-    
-    xmlhttp.open("GET", "?action=aLoadNotificationBell", true);
+    };    
+    xmlhttp.open("GET", "?action=aLoadNotifications", true);
     xmlhttp.send();
-    $('.popover-dismiss').popover({
-        trigger: 'focus'
-    });
+    
+
+    // $('.popover-dismiss').popover({
+    //     trigger: 'focus'
+    // });
 });
 
 function selectUser(id, firstname, lastname, email) {   
@@ -245,25 +259,9 @@ function formatMessages(rawMessages) {
     return result;
 }
 
-function loadNotificationBell() {
-    $.ajax({
-        url: "?action=aLoadNotificationBell",
-        type: "get"
-    })
-    .done(function (response, textStatus, jqXHR) {
-        $('#navigation-link').html(formatNotificationBell(response));
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-        console.log("Error" + textStatus + errorThrown);
-    })
-    .always(function () {
-        console.log("done");
-    });
-}
-
 function formatNotificationBell(hasNotifications) {
     // TODO: Pull messages down
-    var result = '<li class="nav-item"><a class="nav-link" href="#" data-target="#notifcationModal" data-toggle="modal">';
+    var result = '<li class="nav-item"><a class="nav-link" href="#" data-target="#notifcationModal" data-toggle="modal" onclick="updateNotificationsToRead()">';
     if(hasNotifications == 'true')
     {
         result += '<svg class="bi bi-bell-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="red" xmlns="http://www.w3.org/2000/svg"><path d="M8 16a2 2 0 002-2H6a2 2 0 002 2zm.995-14.901a1 1 0 10-1.99 0A5.002 5.002 0 003 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/></svg>';
@@ -281,13 +279,13 @@ function formatNotificationBell(hasNotifications) {
     return result;
 }
 
-function updateNotificationToRead() {
+function loadNotifications() {
     $.ajax({
-        url: "?action=aUpdateNotificationToRead",
+        url: "?action=aLoadNotifications",
         type: "get"
     })
     .done(function (response, textStatus, jqXHR) {
-        //$('#navigation-link').html(formatNotificationBell(response));
+        $('#notifications').html(formatNotifications(response));
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
@@ -295,4 +293,48 @@ function updateNotificationToRead() {
     .always(function () {
         console.log("done");
     });
+}
+
+function formatNotifications(rawMessages) {
+    var result = '';
+    var notificationBellIsRed = "false";
+    if (rawMessages != "") {
+        result += "<table class='table'>";
+        result += "<tbody>";
+
+        rawMessages.split('\\n').forEach(message => {
+            var fields = message.split(',');
+            result += "<tr>";
+            result += "<td>" + fields[0] + "</td>";
+            result += "<td>" + fields[1] + "</td>";
+            result += "</tr>";
+
+            if(fields[2] == 0)
+            {
+                notificationBellIsRed = "true";
+            }
+                //change to read
+                //$db->updateNotificationsIsReadToRead($userId);
+        });
+
+        result += "</tbody>";
+        result += "</table>";
+    } else {
+        result = "<div>No Notifications found.</div>";
+    }
+    $('#navigation-link').html(formatNotificationBell(notificationBellIsRed));
+    return result;
+}
+
+
+function updateNotificationsToRead() {
+    var xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+            }
+        };
+        
+        xmlhttp.open("GET", '?action=aUpdateNotificationsToRead', true);
+        xmlhttp.send();
 }

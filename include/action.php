@@ -81,8 +81,11 @@ class Action {
             case "aLoadMessages":
                 $this->loadMessages();
             break;
-            case "aLoadNotificationBell":
-                $this->loadNotificationBell();
+            case "aUpdateNotificationsToRead":
+                $this->updateNotificationsToRead();
+            break;
+            case "aLoadNotifications":                
+                $this->loadNotifications();
             break;
         }
     }
@@ -695,6 +698,11 @@ class Action {
             $db->single_dynamic_query("INSERT INTO user (firstname, lastname, email, password)"
             . "VALUES ('$firstname', '$lastname', '$email', '$encryptet_pw')");
             $session->putData("SignInMessage", "You are successfully signed up.") ;
+
+            //add welcome noti
+            $userId = $db->getUserID($email);
+            $db->createNotification($userId, "Welcome to our application!","NULL");
+
             $header->setHeader('mSignIn');
 		} else { 
             $session->PutData('useralreadyexistmessage', 1);
@@ -825,32 +833,49 @@ class Action {
         }
     }
 
-    function loadNotificationBell() {
+    function loadNotifications() {
         global $session;
         global $db;
-
-        $userId = $session->getData("UserId");
         
-        if ($session->getData('SignedIn') == 'true') {
-            $unreadNotifications = $db->single_dynamic_query('SELECT * FROM notification WHERE is_read = 0 AND user_id='.$userId);
-            //no notifications
-            if($unreadNotifications == 'false') {
-              echo "false";
+        $userId = $session->getData("UserId");
+
+
+        if (isset($userId)) {
+            $messages = $db->single_dynamic_query('SELECT message, date, is_read, message_id  FROM notification WHERE user_id ='.$userId);
+
+            //$messages = $db->single_dynamic_query("SELECT user.id, user.firstname, user.lastname, message.date, message.id, message_text.data FROM message INNER JOIN user ON message.user_id = user.id INNER JOIN message_text ON message.id = message_text.id WHERE groupchat_id = '$groupId' ORDER BY message.date");
+            if ($messages != "false") {
+                $result = '';
+
+                for ($i = 0; $i < count($messages[0]); $i++) {
+                    for ($j = 0; $j < count($messages[0][$i]); $j++) {
+
+                        $result .= $messages[0][$i][$j];
+                        
+                        if ($j != count($messages[0][$i]) - 1) {
+                            $result .= ',';
+                        }
+                    }
+                    if ($i != count($messages[0]) - 1) {
+                        $result .= '\n';
+                    }
+                }
+                echo $result;
+            } else {
+                echo "";
             }
-            else{
-              echo "true";
-            }
+            exit;
         }
-        else
-        {
-            echo '';
-        }
-        exit;
     }
 
-    function loadNotifications() {
+    function updateNotificationsToRead()
+    {
+        global $session;
+        global $db;
         
-    } 
+        $userId = $session->getData("UserId");
+        $db->updateNotificationsIsReadToRead($userId);
+    }
 }
 
 $actionObj = new Action($_REQUEST['action']);
