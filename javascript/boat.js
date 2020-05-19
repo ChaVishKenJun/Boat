@@ -202,7 +202,6 @@ function loadMessages() {
         console.log("Error" + textStatus + errorThrown);
     })
     .always(function () {
-        console.log("done");
         if (pageLoaded == false) {
             loadPage();
             pageLoaded = true;
@@ -285,9 +284,6 @@ function loadNotifications() {
         console.log("done");
     });
 }
-
-function newPoll() {
-}
     
 function formatNotifications(rawMessages) {
     var result = '';
@@ -331,4 +327,28 @@ function updateNotificationsToRead() {
         
         xmlhttp.open("GET", '?action=aUpdateNotificationsToRead', true);
         xmlhttp.send();
+}
+
+/* POLL */
+function addPollOption() {
+    $('#newPollOptions').append('<input name="option" type="text" class="form-control" required>');
+}
+
+function submitNewPoll(e) {
+    e.preventDefault();
+    $.ajax({
+        url: "?action=aCreatePoll",
+        type: "post",
+        data: { data: JSON.stringify($(e.target).serializeArray()) }
+    })
+    .done(function (response, textStatus, jqXHR) {
+        alert(response);
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        console.log("done");
+    });
+    return false;
 }

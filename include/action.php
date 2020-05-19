@@ -87,6 +87,9 @@ class Action {
             case "aLoadNotifications":                
                 $this->loadNotifications();
             break;
+            case "aCreatePoll":
+                $this->createPoll($_POST["data"]);
+            break;
         }
     }
     
@@ -875,6 +878,63 @@ class Action {
         
         $userId = $session->getData("UserId");
         $db->updateNotificationsIsReadToRead($userId);
+    }
+
+    function createPoll($data) {
+        global $db;
+        global $session;
+        
+        $groupId = $session->getData("GroupId");
+        $userId = $session->getData("UserId");
+
+        $options = [];
+
+        // Get PHP data from json
+        foreach (json_decode($data, true) as $field) {
+            switch ($field["name"]) {
+                case "title":
+                    $title = $field["value"];
+                break;
+                case "option":
+                    array_push($options, $field["value"]);
+                break;
+                case "dueDate":
+                    $date = $field["value"];
+                break;
+                case "dueTime":
+                    $time = $field["value"];
+                break;
+                case "multiselect":
+                    if ($field["value"] == "on") {
+                        $multiSelect = true;
+                    } else {
+                        $multiSelect = false;
+                    }
+                break;
+            }
+        }
+        
+        // Adjust date and time
+        if (!isset($date) && !isset($time)) {
+            $datetime = null;
+        } else if (isset($date) && !isset($time)) {
+            $datetime = $date . ' ' . "00:00:00";
+        } else if (!isset($date) && isset($time)) {
+            $datetime = date("Y-m-d") . ' ' . $time . ":00";
+        } else {
+            $datetime = $date . ' ' . $time . ":00";
+        }
+
+        // Save poll and get the id of the new poll
+        $pollId = $db->createPoll($groupId, $userId, $title, $datetime, $multiSelect);
+
+        // Add option to the poll
+        foreach ($options as $option) {
+            $db->addOptionToPoll($pollId, $option);
+        }
+
+        echo '';
+        exit;
     }
 }
 
