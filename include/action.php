@@ -744,8 +744,10 @@ class Action {
         $groupId = $db->createGroup($name);
 
         // Add users to the group
-        foreach ($userIdArray as &$userId) {
-            $db->addUserToGroup($groupId, $userId);
+        foreach ($userIdArray as $userId) {
+            if (isset($userId)) {
+                $db->addUserToGroup($groupId, $userId);
+            }
         }
 
         // If the current user is not in the list, add the user too
@@ -814,7 +816,7 @@ class Action {
                 }
                 echo $result;
             } else {
-                echo "No message to display.";
+                echo "";
             }
             exit;
         }

@@ -6,7 +6,7 @@
 				<input type="text" class="form-control">
 			</div>
 			<div class="col-1">
-				<button class="btn btn-secondary btn-lg btn-block" type="submit">+</button>
+				<a tabindex="0" class="btn btn-lg btn-secondary btn-block text-white" role="button" data-toggle="popover">+</a>
 			</div>
 			<div class="col-1">
 				<button class="btn btn-primary btn-lg btn-block" type="submit" onclick=sendMessage(this)>Send</button>
