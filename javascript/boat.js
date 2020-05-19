@@ -281,7 +281,6 @@ function loadNotifications() {
         console.log("Error" + textStatus + errorThrown);
     })
     .always(function () {
-        console.log("done");
     });
 }
     
@@ -348,7 +347,7 @@ function submitNewPoll(e) {
         console.log("Error" + textStatus + errorThrown);
     })
     .always(function () {
-        console.log("done");
+        $($($(e.target).parent().parent()).find('.close')).click();
     });
     return false;
 }
