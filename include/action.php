@@ -81,6 +81,9 @@ class Action {
             case "aLoadMessages":
                 $this->loadMessages();
             break;
+            case "aLoadNotificationBell":
+                $this->loadNotificationBell();
+            break;
         }
     }
     
@@ -819,6 +822,33 @@ class Action {
             exit;
         }
     }
+
+    function loadNotificationBell() {
+        global $session;
+        global $db;
+
+        $userId = $session->getData("UserId");
+        
+        if ($session->getData('SignedIn') == 'true') {
+            $unreadNotifications = $db->single_dynamic_query('SELECT * FROM notification WHERE is_read = 0 AND user_id='.$userId);
+            //no notifications
+            if($unreadNotifications == 'false') {
+              echo "false";
+            }
+            else{
+              echo "true";
+            }
+        }
+        else
+        {
+            echo '';
+        }
+        exit;
+    }
+
+    function loadNotifications() {
+        
+    } 
 }
 
 $actionObj = new Action($_REQUEST['action']);

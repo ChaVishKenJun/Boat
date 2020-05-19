@@ -67,6 +67,19 @@ $(document).ready(function () {
         }
     });
 
+    //notification bell
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            $('#navigation-link').html(this.responseText);
+            
+            loadNotificationBell();
+            loader = setInterval(loadNotificationBell, 1000);
+        }
+    };
+    
+    xmlhttp.open("GET", "?action=aLoadNotificationBell", true);
+    xmlhttp.send();
 });
 
 function selectUser(id, firstname, lastname, email) {   
@@ -197,4 +210,56 @@ function formatMessages(rawMessages) {
         result += "</div>";
     });
     return result;
+}
+
+function loadNotificationBell() {
+    $.ajax({
+        url: "?action=aLoadNotificationBell",
+        type: "get"
+    })
+    .done(function (response, textStatus, jqXHR) {
+        $('#navigation-link').html(formatNotificationBell(response));
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        console.log("done");
+    });
+}
+
+function formatNotificationBell(hasNotifications) {
+    // TODO: Pull messages down
+    var result = '<li class="nav-item"><a class="nav-link" href="#" data-target="#notifcationModal" data-toggle="modal">';
+    if(hasNotifications == 'true')
+    {
+        result += '<svg class="bi bi-bell-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="red" xmlns="http://www.w3.org/2000/svg"><path d="M8 16a2 2 0 002-2H6a2 2 0 002 2zm.995-14.901a1 1 0 10-1.99 0A5.002 5.002 0 003 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/></svg>';
+    }
+    else if(hasNotifications == 'false')
+    {
+        result += '<svg class="bi bi-bell" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 16a2 2 0 002-2H6a2 2 0 002 2z"/><path fill-rule="evenodd" d="M8 1.918l-.797.161A4.002 4.002 0 004 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 00-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 111.99 0A5.002 5.002 0 0113 6c0 .88.32 4.2 1.22 6z" clip-rule="evenodd"/></svg>';
+    }
+    else
+    {
+        return '';
+
+    }
+    result += '</a></li>';
+    return result;
+}
+
+function updateNotificationToRead() {
+    $.ajax({
+        url: "?action=aUpdateNotificationToRead",
+        type: "get"
+    })
+    .done(function (response, textStatus, jqXHR) {
+        //$('#navigation-link').html(formatNotificationBell(response));
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        console.log("done");
+    });
 }
