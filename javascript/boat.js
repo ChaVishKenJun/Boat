@@ -209,42 +209,96 @@ function loadMessages() {
     });
 }
 
-function formatMessages(rawMessages) {
+function formatMessages(rawMessage) {
     // TODO: Pull messages down
+    var messages = JSON.parse(rawMessage);
 
     var result = '';
-    if (rawMessages != "") {
-        rawMessages.split('\\n').forEach(message => {
-            var fields = message.split(',');
-    
-            result += "<div message-id='" + fields[4] + "' class='message container-fluid align-text-bottom'>";
-    
-            if (fields[0] != "true") {
-                result += "<div class='row'>";
-                result += "<div class='col'>";
-                result += "<span class='user'>" + fields[1] + ' ' + fields[2] + "</span>";
-                result += "</div>";
-                result += "</div>";
-            }
-    
+
+    messages.forEach(message => {
+        result += "<div message-id='" + message.messageId + "' class='message container-fluid align-text-bottom'>";
+
+        if (!message.isMine) {
             result += "<div class='row'>";
             result += "<div class='col'>";
-            result += "<span class='bg-light px-3 py-1 m-1 rounded" + (fields[0] == "true" ? " float-right" : " float-left") + "'>";
-            result += "<span class='data'>" + fields[5] + "</span>";
+            result += "<span class='user'>" + message.userFirstName + ' ' + message.userLastName + "</span>";
             result += "</div>";
             result += "</div>";
-            result += "<div class='row mb-2'>"
-            result += "<div class='col'>";
-            result += "<span class='date badge text-muted font-weight-light" + (fields[0] == "true" ? " float-right" : "") + "'>" + fields[3] + "</span>";
-            result += "</span>";
-            result += "</div>";
-            result += "</div>";
-            result += "</div>";
-        });
-    } else {
-        result += "This chat is still empty.";
-    }
+        }
+        
+        switch (message.type) {
+            case "text":
+                result += "<div class='row'>";
+                result += "<div class='col'>";
+                result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+                result += "<span class='data'>" + message.data + "</span>";
+                result += "</span>";
+                result += "</div>";
+                result += "</div>";
+                break;
+            case "image":
+                break;
+            case "video":
+                break;
+            case "poll":
+                result += "<div class='row'>";
+                result += "<div class='col'>";
+                result += "<div class='.container-sm bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+                result += "<form>";
+                result += "<fieldset>";
+                result += "<legend>" + message.data.title + "</legend>";
+                result += "</fieldset>";
 
+                if (message.data.multiselect == "1") {
+                    for (let index = 0; index < message.data.options.length; index++) {
+                        const option = message.data.options[index];
+                        
+                        result += '<div class="input-group mb-3">';
+                        result += '<div class="input-group-prepend">';
+                        result += '<div class="input-group-text">';
+                        result += '<input type="checkbox" value="' + option.id + '" id="option' + option.id + '">';
+                        result += '</div>';
+                        result += '</div>';
+                        result += '<label class="form-control" for="option' + option.id +'">';
+                        result += option.name;
+                        result += '</label>';
+                        result += '</div>';
+                    }
+                } else {
+                    for (let index = 0; index < message.data.options.length; index++) {
+                        const option = message.data.options[index];
+
+                        result += '<div class="input-group mb-3">';
+                        result += '<div class="input-group-prepend">';
+                        result += '<div class="input-group-text">';
+                        result += '<input type="radio" id="radios' + message.messageId + '" value="' + option.id + '" checked>';
+                        result += '</div>';
+                        result += '</div>';
+                        result += '<label class="form-control" for="radios' + message.messageId + '">';
+                        result += option.name;
+                        result += '</label>';
+                        result += '</div>';
+                    }
+                }
+
+                result += "<button class='btn btn-primary btn-sm btn-block'>Vote</button>";
+                result += "</form>";
+                result += "</div>";
+                result += "</div>";
+                result += "</div>";
+                break;
+            default:
+                break;
+        }
+
+        result += "<div class='row mb-2'>"
+        result += "<div class='col'>";
+        result += "<span class='date badge text-muted font-weight-light" + (message.isMine ? " float-right" : "") + "'>" + message.date + "</span>";
+        result += "</span>";
+        result += "</div>";
+        result += "</div>";
+        result += "</div>";
+    });
     
     return result;
 }

@@ -802,8 +802,67 @@ class Action {
         $groupId = $session->getData("GroupId");
         $userId = $session->getData("UserId");
 
-        if (isset($groupId)) {
-            $messages = $db->single_dynamic_query("SELECT user.id, user.firstname, user.lastname, message.date, message.id, message_text.data FROM message INNER JOIN user ON message.user_id = user.id INNER JOIN message_text ON message.id = message_text.id WHERE groupchat_id = '$groupId' ORDER BY message.date");
+        if (isset($groupId) && isset($userId)) {
+            $resultArray = [];
+            
+            $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
+
+            if ($messages != "false") {
+                foreach ($messages[0] as $message) {
+                    $messageId = $message[0];
+
+                    $type = '';
+                    $data = '';
+
+                    $textMessage = $db->single_dynamic_query("SELECT data FROM message_text WHERE id = '$messageId'");
+
+                    if ($textMessage != "false") {
+                        $type = "text";
+                        $data = $textMessage[0][0][0];
+                    }
+                    
+                    $imageMessage = $db->single_dynamic_query("SELECT data FROM message_image WHERE id = '$messageId'");
+                    if ($imageMessage != "false") {
+                        $type = "image";
+                        $data = $imageMessage[0][0][0];
+                    }
+                    
+                    $videoMessage = $db->single_dynamic_query("SELECT data FROM message_video WHERE id = '$messageId'");
+                    if ($videoMessage != "false") {
+                        $type = "image";
+                        $data = $videoMessage[0][0][0];
+                    }
+
+                    $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select FROM message_poll WHERE id = '$messageId'");
+
+                    if ($pollMessage != "false") {
+
+                        $options = $db->single_dynamic_query("SELECT id, name FROM poll_option WHERE message_poll_id = '$messageId'");
+                        
+                        $optionArray = [];
+
+                        if ($options != "false") {
+                            foreach ($options[0] as $option) {
+                                array_push($optionArray, array('id' => $option[0], 'name' => $option[1]));
+                            }
+                        }
+
+                        $type = "poll";
+                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray);
+                    }
+
+                    $isMine = $message[2] == $userId;
+
+                    array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data));
+                }
+                
+                echo json_encode($resultArray);
+                exit;
+            }
+            
+
+
+            /*$messages = $db->single_dynamic_query("SELECT user.id, user.firstname, user.lastname, message.date, message.id, message_text.data FROM message INNER JOIN user ON message.user_id = user.id INNER JOIN message_text ON message.id = message_text.id WHERE groupchat_id = '$groupId' ORDER BY message.date");
 
             if ($messages != "false") {
                 $result = '';
@@ -832,7 +891,7 @@ class Action {
             } else {
                 echo "";
             }
-            exit;
+            exit;*/
         }
     }
 
