@@ -121,6 +121,29 @@ class Database {
 
 	/* Static Functions */
 
+	function getUserID($email) {
+		//its a static prepared and encryptet sql SELECT
+		$this->open_db();
+		$sql="SELECT id from user where email='$email'";
+		$result = $this->db_connection->query($sql);
+		$row = $result->fetch_assoc();
+		//$row = mysql_fetch_array($result);
+		$personId = $row["id"];
+		return $personId;
+	}
+
+	function createNotification($userId, $message,$messageId) {
+		$date = date("Y-m-d H:i:s");
+
+		$this->open_db();
+		$sql="INSERT INTO notification (message, is_read, date, message_id, user_id)" . "VALUES ('$message', 0, '$date', $messageId, $userId)";
+		$this->db_connection->query($sql);
+		$groupId = $this->db_connection->insert_id;
+		$this->db_connection->close();
+		return $groupId;
+	}
+
+
 	/**
 	 * This function creates a new group with specified name in the database.
 	 * @param string $name name of the new group

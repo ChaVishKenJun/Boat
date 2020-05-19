@@ -29,38 +29,10 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
+      <div id="notifications" class="modal-body">
         <?php
-          //no notifications
-          global $session;
-          global $db;
-          $userId = $session->getData("UserId");
-
-          $notifications = $db->single_dynamic_query('SELECT message,message_id, date FROM notification WHERE user_id ='.$userId);
-          if($notifications=='false') {
-            echo "<div>No Notifications found.</div>";
-          }
-          else{
-            $fields = $notifications[1]['con'][0];
-            //print_r($result_singlequery_dynamic);
-            echo "<table class='table'>";
-            echo "<tbody>";
-            foreach ($notifications[0] as $row) {
-              $count=0;
-              echo "<tr>";
-              while($count<=$fields-1) {
-                echo "<td>" . $row[$count] . "</td>";
-                $count++;
-              }
-              echo "</tr>";
-                    
-            }
-            echo "</tbody>";
-            echo "</table>";
-            
             //change to read
             $db->updateNotificationsIsReadToRead($userId);
-          }
         ?>    
          
       </div>
