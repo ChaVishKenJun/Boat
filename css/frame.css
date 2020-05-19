@@ -213,3 +213,7 @@ form button img {
 .message {
 	overflow: hidden;
 }
+
+.message:last-of-type {
+	margin-bottom: 1.5em;
+}
