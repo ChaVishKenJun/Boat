@@ -91,19 +91,6 @@ $(document).ready(function () {
         });
     });
 
-    //notification bell
-    // var xmlhttp = new XMLHttpRequest();
-    // xmlhttp.onreadystatechange = function() {
-    //     if (this.readyState == 4 && this.status == 200) {
-    //         $('#navigation-link').html(this.responseText);
-            
-    //         loadNotificationBell();
-    //         loader = setInterval(loadNotificationBell, 1000);
-    //     }
-    // };    
-    // xmlhttp.open("GET", "?action=aLoadNotificationBell", true);
-    // xmlhttp.send();
-
     //notifications
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
@@ -118,9 +105,9 @@ $(document).ready(function () {
     xmlhttp.send();
     
 
-    // $('.popover-dismiss').popover({
-    //     trigger: 'focus'
-    // });
+    $('.popover-dismiss').popover({
+        trigger: 'focus'
+    });
 });
 
 function selectUser(id, firstname, lastname, email) {   
