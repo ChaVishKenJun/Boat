@@ -90,6 +90,9 @@ class Action {
             case "aCreatePoll":
                 $this->createPoll($_POST["data"]);
             break;
+            case "aVote":
+                $this->vote($_POST["data"]);
+            break;
         }
     }
     
@@ -851,8 +854,16 @@ class Action {
                             }
                         }
 
+                        $votes = $db->single_dynamic_query("SELECT * FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id WHERE user_id = '$userId' AND message_poll_id = '$messageId'");
+
+                        $voted = false;
+
+                        if ($votes != "false") {
+                            $voted = true;
+                        }
+
                         $type = "poll";
-                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray);
+                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray, 'voted' => $voted);
                     }
 
                     $isMine = $message[2] == $userId;
@@ -1003,6 +1014,26 @@ class Action {
         }
 
         echo '';
+        exit;
+    }
+
+    function vote($data) {
+        global $db;
+        global $session;
+        
+        $userId = $session->getData("UserId");
+
+        // TODO: Security - Check if the option belongs to the poll
+        // TODO: Security - Check if multiselect is enabled when there are more options
+
+        try {    
+            foreach (json_decode($data, true) as $option) {
+                $db->vote($userId, $option["value"]);
+            }
+            echo "true";
+        } catch (Exception $e) {
+            echo "false";
+        }
         exit;
     }
 }
