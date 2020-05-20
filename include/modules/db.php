@@ -158,6 +158,16 @@ class Database {
 		return $groupId;
 	}
 
+	/**
+	 * 
+	 */
+	function addUserToGroup($groupId, $userId) {
+		$this->open_db();
+		$sql="INSERT INTO user_group (user_id, group_id) VALUES ($userId, $groupId)";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
 	function sendMessage($groupId, $userId, $message) {
 		$t = microtime(true);
 		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
@@ -177,7 +187,10 @@ class Database {
 	}
 
 	function createPoll($groupId, $userId, $title, $datetime, $multiSelect) {
-		$date = date("Y-m-d H:i:s");
+		$t = microtime(true);
+		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
+		$d = new DateTime(date('Y-m-d H:i:s.'.$micro, $t));
+		$date = $d->format("Y-m-d H:i:s.u");
 
 		$this->open_db();
 		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
@@ -191,22 +204,21 @@ class Database {
 		return $messageId;
 	}
 
+	function vote($userId, $optionId) {
+		$this->open_db();
+		$sql = "INSERT INTO vote (user_id, poll_option_id) VALUES ('$userId', '$optionId')";
+		$this->db_connection->query($sql);
+		$voteId = $this->db_connection->insert_id;
+		$this->db_connection->close();
+		return $voteId;
+	}
+
 	function addOptionToPoll($pollId, $option) {
 		$this->open_db();
 		$sql = "INSERT INTO poll_option (name, message_poll_id) VALUES ('$option', '$pollId')";
 		$this->db_connection->query($sql);
 		$optionId = $this->db_connection->insert_id;
 		return $optionId;
-	}
-
-	/**
-	 * 
-	 */
-	function addUserToGroup($groupId, $userId) {
-		$this->open_db();
-		$sql="INSERT INTO user_group (user_id, group_id) VALUES ($userId, $groupId)";
-		$this->db_connection->query($sql);
-		$this->db_connection->close();
 	}
 
 	function updateNotificationsIsReadToRead($userId) {
