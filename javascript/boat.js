@@ -135,6 +135,8 @@ function formatMessages(rawMessage) {
             default:
                 break;
         }
+            
+        result += "<a tabindex=\"0\" class=\"btn btn-lg btn-secondary btn-block text-white message-button\" data-trigger=\"focus\"  role=\"button\" data-toggle=\"popover\">+</a>"
 
         result += "<div class='row mb-2'>"
         result += "<div class='col'>";
@@ -156,6 +158,23 @@ $('#input input').on('keyup keypress', function(e) {
   });
 
 $(document).ready(function () {
+    var messagePopover = {
+        placement: 'bottom',
+        container: 'body',
+        html: true,
+        selector: '.message-button', //Sepcify the selector here
+        content: function () {
+            var messageId = $(this).parent().attr('message-id');
+            var div = $('<div></div>');
+                div.append('<button type="button" class="btn btn-block" data-toggle="modal" data-target="#newPollModal">Edit</svg></button>');
+                div.append('<button type="button" class="btn btn-block">Pin</button>');
+                div.append('<button type="button" class="btn btn-block" onclick="deleteMessage(' + messageId + ')">Delete</button>');
+                return div;
+        }
+    }
+    $('body').popover(messagePopover);
+
+
     $('#userQuery').on('keyup keydown paste', function () {
         var query = $(this).val();
 
@@ -427,4 +446,11 @@ function submitNewPoll(e) {
         $($($(e.target).parent().parent()).find('.close')).click();
     });
     return false;
+}
+
+function deleteMessage(messageId)
+{
+    if (confirm('Are you sure you want to delete this message?')) {
+    } else {
+    }
 }
