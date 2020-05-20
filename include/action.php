@@ -963,7 +963,7 @@ class Action {
     function createPoll($data) {
         global $db;
         global $session;
-        
+
         $groupId = $session->getData("GroupId");
         $userId = $session->getData("UserId");
 
@@ -986,23 +986,25 @@ class Action {
                 break;
                 case "multiselect":
                     if ($field["value"] == "on") {
-                        $multiSelect = true;
-                    } else {
-                        $multiSelect = false;
+                        $multiSelect = "true";
                     }
                 break;
             }
         }
+
+        if (!isset($multiSelect)) {
+            $multiSelect = "false";
+        }
         
         // Adjust date and time
-        if (!isset($date) && !isset($time)) {
-            $datetime = null;
-        } else if (isset($date) && !isset($time)) {
-            $datetime = $date . ' ' . "00:00:00";
-        } else if (!isset($date) && isset($time)) {
-            $datetime = date("Y-m-d") . ' ' . $time . ":00";
+        if ($date == '' && $time == '') {
+            $datetime = 'null';
+        } else if ($date != '' && $time == '') {
+            $datetime = "'" . $date . ' ' . "00:00:00" . "'";
+        } else if ($date == '' && $time != '') {
+            $datetime = "'" . date("Y-m-d") . ' ' . $time . ":00" . "'";
         } else {
-            $datetime = $date . ' ' . $time . ":00";
+            $datetime = "'" . $date . ' ' . $time . ":00" . "'";
         }
 
         // Save poll and get the id of the new poll

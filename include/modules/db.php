@@ -197,7 +197,7 @@ class Database {
 		$this->db_connection->query($sql);
 		$messageId = $this->db_connection->insert_id;
 
-		$sql = "INSERT INTO message_poll (id, title, due, multi_select) VALUES ('$messageId', '$title', '$datetime', '$multiSelect')";
+		$sql = "INSERT INTO message_poll (id, title, due, multi_select) VALUES ('$messageId', '$title', $datetime, $multiSelect)";
 		$this->db_connection->query($sql);
 
 		$this->db_connection->close();
