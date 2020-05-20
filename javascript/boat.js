@@ -1,25 +1,161 @@
-var loader;
-var pageLoaded = false;
+var dataLoader; // Interval object for polling data
+var timestamp; // Timestamp when the data is loaded last time
 
-function loadPage() {
-    /// <summary>Contains the behaviours that should be executed every time content is loaded with javascript.</summary>
-
-    // Scroll down to see the last message
-    $("html, body").scrollTop($(document).height());
-
+function toDateString(datetime) {
+    return datetime.getFullYear().toString() + '-' + (datetime.getMonth() + 1).toString() + '-' + datetime.getDate().toString() + ' ' + datetime.getHours() + ':' + datetime.getMinutes() + ':' + datetime.getSeconds() + '.' + datetime.getMilliseconds() + '000';
 }
 
-$('#input form').on('keyup keypress', function(e) {
+function scrollDown() {
+    $("html, body").scrollTop($(document).height());
+}
+
+function loadData() {
+    /// <summary>Load data when page is newly open.</summary>
+    loadMessages();
+}
+
+function pollData() {
+    /// <summary>Check for newly created data and update the content.</summary>
+    loadMessages(timestamp);
+}
+
+function loadMessages(laterThan = null) {
+    timestamp = new Date();
+    
+    $.ajax({
+        url: "?action=aLoadMessages" + (laterThan != null ? "&laterThan=" + toDateString(laterThan) : ''),
+        type: "get"
+    })
+    .done(function (response, textStatus, jqXHR) {
+        if (laterThan == null) {
+            if (response != '') {
+                $('#messages').html(formatMessages(response));
+                scrollDown();
+            } else {
+                $('#messages').html('This chat is still new.');
+            }
+        } else {
+            if (response != '') {
+                $('#messages').append(formatMessages(response));
+                scrollDown();
+            }
+        }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("An error occured while loading messages: " + textStatus + errorThrown);
+        $('#messages').html("An error has occured. Please try again later.");
+    })
+    .always(function () {
+    });
+}
+
+function formatMessages(rawMessage) {
+    // TODO: Pull messages down
+    var messages = JSON.parse(rawMessage);
+
+    var result = '';
+
+    messages.forEach(message => {
+        result += "<div message-id='" + message.messageId + "' class='message container-fluid align-text-bottom'>";
+
+        if (!message.isMine) {
+            result += "<div class='row'>";
+            result += "<div class='col'>";
+            result += "<span class='user'>" + message.userFirstName + ' ' + message.userLastName + "</span>";
+            result += "</div>";
+            result += "</div>";
+        }
+        
+        switch (message.type) {
+            case "text":
+                result += "<div class='row'>";
+                result += "<div class='col'>";
+                result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+                result += "<span class='data'>" + message.data + "</span>";
+                result += "</span>";
+                result += "</div>";
+                result += "</div>";
+                break;
+            case "image":
+                break;
+            case "video":
+                break;
+            case "poll":
+                result += "<div class='row'>";
+                result += "<div class='col'>";
+                result += "<div class='.container-sm bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+                result += "<form>";
+                result += "<fieldset>";
+                result += "<legend>" + message.data.title + "</legend>";
+                result += "</fieldset>";
+
+                if (message.data.multiselect == "1") {
+                    for (let index = 0; index < message.data.options.length; index++) {
+                        const option = message.data.options[index];
+                        
+                        result += '<div class="input-group mb-3">';
+                        result += '<div class="input-group-prepend">';
+                        result += '<div class="input-group-text">';
+                        result += '<input type="checkbox" value="' + option.id + '" id="option' + option.id + '">';
+                        result += '</div>';
+                        result += '</div>';
+                        result += '<label class="form-control" for="option' + option.id +'">';
+                        result += option.name;
+                        result += '</label>';
+                        result += '</div>';
+                    }
+                } else {
+                    for (let index = 0; index < message.data.options.length; index++) {
+                        const option = message.data.options[index];
+
+                        result += '<div class="input-group mb-3">';
+                        result += '<div class="input-group-prepend">';
+                        result += '<div class="input-group-text">';
+                        result += '<input type="radio" id="radios' + message.messageId + '" value="' + option.id + '" checked>';
+                        result += '</div>';
+                        result += '</div>';
+                        result += '<label class="form-control" for="radios' + message.messageId + '">';
+                        result += option.name;
+                        result += '</label>';
+                        result += '</div>';
+                    }
+                }
+
+                result += "<button class='btn btn-primary btn-sm btn-block'>Vote</button>";
+
+                if (message.isMine) {
+                    result += "<button class='btn btn-primary btn-sm btn-block'>Close</button>";
+                }
+
+                result += "</form>";
+                result += "</div>";
+                result += "</div>";
+                result += "</div>";
+                break;
+            default:
+                break;
+        }
+
+        result += "<div class='row mb-2'>"
+        result += "<div class='col'>";
+        result += "<span class='date badge text-muted font-weight-light" + (message.isMine ? " float-right" : "") + "'>" + message.date.split('.')[0] + "</span>";
+        result += "</span>";
+        result += "</div>";
+        result += "</div>";
+        result += "</div>";
+    });
+    
+    return result;
+}
+
+$('#input input').on('keyup keypress', function(e) {
     var keyCode = e.keyCode || e.which;
     if (keyCode === 13) { 
-      e.preventDefault();
-      $($(this).find('button')).click();
-      return false;
+        sendMessage();
     }
   });
 
 $(document).ready(function () {
-
     $('#userQuery').on('keyup keydown paste', function () {
         var query = $(this).val();
 
@@ -145,9 +281,9 @@ function removeUser(id) {
 }
 
 function openGroup(sender) {
-    // When a group is opened, load the page.
-    pageLoaded = false;
+    clearInterval(dataLoader);
 
+    // When a group is opened, load the page.
     $(sender).parent().find('.nav-link').removeClass('active');
     $($(sender).parent().find('.nav-link')[0]).addClass('active');
     $(sender).addClass('active');
@@ -159,11 +295,9 @@ function openGroup(sender) {
 
         xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                $('#messages').html(this.responseText);
                 $('#input').removeAttr("hidden");
-                
-                loadMessages();
-                loader = setInterval(loadMessages, 1000);
+                loadData();
+                dataLoader = setInterval(pollData, 1000);
             }
         };
         
@@ -172,14 +306,15 @@ function openGroup(sender) {
     }
 }
 
-function sendMessage(sender) {
-    var message = $(sender).parent().parent().find('input').val();
+function sendMessage() {
+    var message = $('#input').find('input').val();
 
     if (message != '') {
         var xmlhttp = new XMLHttpRequest();
 
         xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
+                var response = this.responseText;   
             }
         };
         
@@ -187,121 +322,9 @@ function sendMessage(sender) {
         xmlhttp.send();
     }
 
-    $(sender).parent().parent().find('input').val('');
+    $('#input').find('input').val('');
 }
 
-function loadMessages() {
-    $.ajax({
-        url: "?action=aLoadMessages",
-        type: "get"
-    })
-    .done(function (response, textStatus, jqXHR) {
-        $('#messages').html(formatMessages(response));
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-        console.log("Error" + textStatus + errorThrown);
-    })
-    .always(function () {
-        if (pageLoaded == false) {
-            loadPage();
-            pageLoaded = true;
-        }
-    });
-}
-
-function formatMessages(rawMessage) {
-    // TODO: Pull messages down
-    var messages = JSON.parse(rawMessage);
-
-    var result = '';
-
-    messages.forEach(message => {
-        result += "<div message-id='" + message.messageId + "' class='message container-fluid align-text-bottom'>";
-
-        if (!message.isMine) {
-            result += "<div class='row'>";
-            result += "<div class='col'>";
-            result += "<span class='user'>" + message.userFirstName + ' ' + message.userLastName + "</span>";
-            result += "</div>";
-            result += "</div>";
-        }
-        
-        switch (message.type) {
-            case "text":
-                result += "<div class='row'>";
-                result += "<div class='col'>";
-                result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
-                result += "<span class='data'>" + message.data + "</span>";
-                result += "</span>";
-                result += "</div>";
-                result += "</div>";
-                break;
-            case "image":
-                break;
-            case "video":
-                break;
-            case "poll":
-                result += "<div class='row'>";
-                result += "<div class='col'>";
-                result += "<div class='.container-sm bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
-                result += "<form>";
-                result += "<fieldset>";
-                result += "<legend>" + message.data.title + "</legend>";
-                result += "</fieldset>";
-
-                if (message.data.multiselect == "1") {
-                    for (let index = 0; index < message.data.options.length; index++) {
-                        const option = message.data.options[index];
-                        
-                        result += '<div class="input-group mb-3">';
-                        result += '<div class="input-group-prepend">';
-                        result += '<div class="input-group-text">';
-                        result += '<input type="checkbox" value="' + option.id + '" id="option' + option.id + '">';
-                        result += '</div>';
-                        result += '</div>';
-                        result += '<label class="form-control" for="option' + option.id +'">';
-                        result += option.name;
-                        result += '</label>';
-                        result += '</div>';
-                    }
-                } else {
-                    for (let index = 0; index < message.data.options.length; index++) {
-                        const option = message.data.options[index];
-
-                        result += '<div class="input-group mb-3">';
-                        result += '<div class="input-group-prepend">';
-                        result += '<div class="input-group-text">';
-                        result += '<input type="radio" id="radios' + message.messageId + '" value="' + option.id + '" checked>';
-                        result += '</div>';
-                        result += '</div>';
-                        result += '<label class="form-control" for="radios' + message.messageId + '">';
-                        result += option.name;
-                        result += '</label>';
-                        result += '</div>';
-                    }
-                }
-
-                result += "<button class='btn btn-primary btn-sm btn-block'>Vote</button>";
-                result += "</form>";
-                result += "</div>";
-                result += "</div>";
-                result += "</div>";
-                break;
-            default:
-                break;
-        }
-
-        result += "<div class='row mb-2'>"
-        result += "<div class='col'>";
-        result += "<span class='date badge text-muted font-weight-light" + (message.isMine ? " float-right" : "") + "'>" + message.date + "</span>";
-        result += "</span>";
-        result += "</div>";
-        result += "</div>";
-        result += "</div>";
-    });
-    
-    return result;
-}
 
 function formatNotificationBell(hasNotifications) {
     // TODO: Pull messages down
@@ -382,7 +405,7 @@ function updateNotificationsToRead() {
         xmlhttp.send();
 }
 
-/* POLL */
+/* ---------------------------------------------------- POLL ---------------------------------------------------- */
 function addPollOption() {
     $('#newPollOptions').append('<input name="option" type="text" class="form-control" required>');
 }

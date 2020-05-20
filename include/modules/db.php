@@ -159,7 +159,10 @@ class Database {
 	}
 
 	function sendMessage($groupId, $userId, $message) {
-		$date = date("Y-m-d H:i:s");
+		$t = microtime(true);
+		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
+		$d = new DateTime(date('Y-m-d H:i:s.'.$micro, $t));
+		$date = $d->format("Y-m-d H:i:s.u");
 
 		$this->open_db();
 		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";

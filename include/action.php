@@ -79,7 +79,7 @@ class Action {
                 $this->sendMessage($_GET["message"]);
             break;
             case "aLoadMessages":
-                $this->loadMessages();
+                $this->loadMessages($_GET["laterThan"]);
             break;
             case "aUpdateNotificationsToRead":
                 $this->updateNotificationsToRead();
@@ -793,7 +793,7 @@ class Action {
         }
     }
 
-    function loadMessages() {
+    function loadMessages($laterThan) {
         global $session;
         global $db;
         
@@ -805,7 +805,11 @@ class Action {
         if (isset($groupId) && isset($userId)) {
             $resultArray = [];
             
-            $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
+            if ($laterThan != '') {
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date >= \"$laterThan\" ORDER BY message.date LIMIT 50");
+            } else {
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
+            }
 
             if ($messages != "false") {
                 foreach ($messages[0] as $message) {
@@ -858,6 +862,9 @@ class Action {
                 
                 echo json_encode($resultArray);
                 exit;
+            } else {
+                echo '';
+                exit;
             }
             
 
@@ -892,6 +899,9 @@ class Action {
                 echo "";
             }
             exit;*/
+        } else {
+            echo '';
+            exit;
         }
     }
 

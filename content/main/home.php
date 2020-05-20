@@ -1,18 +1,16 @@
 <div id="messages" class="pt-3 pb-2 mb-5"></div>
 <div id="input" class="card bg-light col-md-9 ml-sm-auto col-lg-10 px-4 py-2 fixed-bottom hidden" hidden>
-	<form>
-		<div class="form-row">
-			<div class="col-10">
-				<input type="text" class="form-control">
-			</div>
-			<div class="col-1">
-				<a tabindex="0" class="btn btn-lg btn-secondary btn-block text-white" data-trigger="focus"  role="button" data-toggle="popover">+</a>
-			</div>
-			<div class="col-1">
-				<button class="btn btn-primary btn-lg btn-block" type="submit" onclick=sendMessage(this)>Send</button>
-			</div>
-		</div>
-	</form>
+    <div class="form-row">
+        <div class="col-10">
+            <input type="text" class="form-control">
+        </div>
+        <div class="col-1">
+            <a tabindex="0" class="btn btn-lg btn-secondary btn-block text-white" data-trigger="focus"  role="button" data-toggle="popover">+</a>
+        </div>
+        <div class="col-1">
+            <button class="btn btn-primary btn-lg btn-block" onclick=sendMessage()>Send</button>
+        </div>
+    </div>
 </div>
 
 <!-- New Poll Modal -->
