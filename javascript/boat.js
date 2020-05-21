@@ -33,7 +33,7 @@ $(document).ready(function () {
             var data = $(this).parent().children('span').children('span').html();
             var div = $('<div></div>');
             div.append('<button type="button" class="btn btn-block" data-toggle="modal" data-target="#editMessageModal" id="editMessageButton" onclick="editMessage(' + messageId + ',\'' + data + '\')">Edit</svg></button>');
-            div.append('<button type="button" class="btn btn-block">Pin</button>');
+            div.append('<button type="button" class="btn btn-block" onclick="pinMessage(' + messageId + ')">Pin</button>');
             div.append('<button type="button" class="btn btn-block" onclick="deleteMessage(' + messageId + ')">Delete</button>');
             return div;
         },
@@ -214,6 +214,24 @@ function deleteMessage(messageId)
     }
 }
 
+function pinMessage(messageId)
+{
+    $.ajax({
+        url: "?action=aPinMessage",
+        type: "post",
+        data: { messageId : messageId }
+    })
+    .done(function (response, textStatus, jqXHR) {
+        loadMessages();
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+
+    });
+}
+
 /* ------------------------------------------------- NOTIFICATIONS ------------------------------------------------- */
 
 function loadNotifications() {
@@ -345,6 +363,11 @@ function formatMessages(rawMessage) {
     var result = '';
 
     messages.forEach(message => {
+        if(message.pinnedDate != null)
+        {
+            result+= '<div id="pinnedMessage" class="text-white bg-primary mb-3 ml-sm-auto col-lg-10 px-4 py-2 fixed-top">' + message.data + '</div>';
+        }
+
         result += "<div message-id='" + message.messageId + "' class='message container-fluid align-text-bottom'>";
 
         if (!message.isMine) {
@@ -360,12 +383,15 @@ function formatMessages(rawMessage) {
 
             result += "<div class='row'>";
             result += "<div class='col position-relative'>";
-            result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
+            if(message.isMine)
+            {
+                result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
             
-            result += '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
-            result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
-            result += '</svg>';
-            result += '</a>';   
+                result += '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
+                result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
+                result += '</svg>';
+                result += '</a>';   
+            }            
 
             switch (message.type) {
                 case "text":
@@ -471,9 +497,11 @@ function formatMessages(rawMessage) {
 
         if(message.deletedDate == null && message.editedDate !=null){
             result += "<div class='row'>";
+            result += "<div class='col position-relative'>";
             result += "<span class='float-right'>";
-            result += "<span class='data float-right'>Message edited</span>";
+            result += "<span class='data'>Message edited</span>";
             result += "</span>";
+            result += "</div>";
             result += "</div>";
         }
     

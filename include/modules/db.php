@@ -206,8 +206,10 @@ class Database {
 		$this->db_connection->close();
 	}
 
-	function pinMessage($messageId) {
+	function pinMessage($messageId, $groupId) {
 		$this->open_db();
+		$sql = "UPDATE message SET pinned_date = NULL WHERE groupchat_id = $groupId";
+		$this->db_connection->query($sql);
 		$date = $this->getCurrentDateTime();
 		$sql = "UPDATE message SET pinned_date = '$date' WHERE id = $messageId";
 		$this->db_connection->query($sql);
