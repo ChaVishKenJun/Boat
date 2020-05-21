@@ -73,3 +73,28 @@
         </div>
     </div>
 </div>
+
+
+<!-- Edit Message Modal -->
+<div class="modal fade" id="editMessageModal" tabindex="-1" role="dialog" aria-labelledby="editMessageModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMessageModalTitle">Edit Message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editMessageForm" onsubmit="return submitEditMessage(event);">
+                <input type="hidden" id="messageId" name="messageId" value="">
+                <div class="modal-body">
+                    <input name="data" type="text" class="form-control" id="data">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="submit">Send</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Discard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

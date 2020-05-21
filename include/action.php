@@ -99,6 +99,12 @@ class Action {
             case "aDeleteMessage":
                 $this->deleteMessage($_POST["messageId"]);
             break;
+            case "aEditMessage":
+                $this->editMessage($_POST["data"]);
+            break;
+            case "aPinMessage":
+                $this->pinMessage($_POST["messageId"]);
+            break;
         }
     }
     
@@ -817,9 +823,9 @@ class Action {
             $resultArray = [];
             
             if ($laterThan != '') {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date >= \"$laterThan\" ORDER BY message.date LIMIT 50");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date >= \"$laterThan\" ORDER BY message.date LIMIT 50");
             } else {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
             }
 
             if ($messages != "false") {
@@ -884,7 +890,7 @@ class Action {
 
                     $isMine = $message[2] == $userId;
 
-                    array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data, 'isDeleted' => $message[5]));
+                    array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data, 'isDeleted' => $message[5], 'isEdited' => $message[6], 'isPinned' => $message[7]));
                 }
                 
                 $response = json_encode($resultArray);
@@ -1063,6 +1069,41 @@ class Action {
 
         try {    
             $db->deleteMessage($messageId);
+            echo "true";
+        } catch (Exception $e) {
+            echo "false";
+        }
+        exit;
+    }
+
+    function editMessage($data) {
+        global $db;
+
+        try {    
+            // Get PHP data from json
+            foreach (json_decode($data, true) as $field) {
+                switch ($field["name"]) {
+                    case "messageId":
+                        $messageId = $field["value"];
+                    break;
+                    case "data":
+                        $message = $field["value"];
+                    break;
+                }
+            }
+            $db->editMessage($messageId, $message);
+            echo "true";
+        } catch (Exception $e) {
+            echo "false";
+        }
+        exit;
+    }
+
+    function pinMessage($messageId) {
+        global $db;
+
+        try {    
+            $db->pinMessage($messageId);
             echo "true";
         } catch (Exception $e) {
             echo "false";
