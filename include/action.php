@@ -7,41 +7,7 @@ class Action {
         global $security;
         
         switch ($action) {
-            case "aCreateOrEditClient":
-                $this->CreateOrEditClient($_POST['personId'], $_POST['firstname'], $_POST['lastname'], $_POST['mobilenumber']);
-            break;
-            case "aCreateOrEditItem":
-                $this->CreateOrEditItem($_POST['itemId'], $_POST['title'], $_POST['type'], $_POST['firstname'], $_POST['lastname'], $_POST['category']);
-            break;
-            case "aBorrowItem":
-                $this->BorrowItem($_POST['title'], $_POST['dateFrom'], $_POST['dateTo'], $_POST['firstName'], $_POST['lastName']);
-            break;
-            case "aReturnItem":
-                $this->ReturnItem($_POST['title'], $_POST['type'], $_POST['firstName'], $_POST['lastName']);
-            break;
-            case "aReserveItem";
-			    $this->ReserveItem($_POST['title'], $_POST['dateFrom'], $_POST['dateTo'], $_POST['firstName'], $_POST['lastName']);
-            break;
-            case "aEditClient":
-                if ($_GET['PersonId']) {
-                    $this->EditClient($_GET['PersonId']);
-                }
-            break;
-            case "aEditItem":
-                if ($_GET['ItemId']) {
-                    $this->EditItem($_GET['ItemId']);
-                }
-            break;
-            case "aDeleteItem":
-                if ($_GET['ItemId']) {
-                    $this->DeleteItem($_GET['ItemId']);
-                }
-            break;
-            case "aDeleteClient":
-                if ($_GET['PersonId']) {
-                    $this->DeleteClient($_GET['PersonId']);
-                }
-            break;
+            
             case "aCreateGroup":                
                 $this->createGroup($_POST['name'], $_POST["users"]);
             break;
@@ -80,6 +46,9 @@ class Action {
             break;
             case "aLoadMessages":
                 $this->loadMessages($_GET["laterThan"]);
+            break;
+            case "aGetUpdatedMessages" :
+                $this->getUpdatedMessages($_GET["updatedLaterThan"]);
             break;
             case "aUpdateNotificationsToRead":
                 $this->updateNotificationsToRead();
@@ -854,7 +823,7 @@ class Action {
                         $data = $videoMessage[0][0][0];
                     }
 
-                    $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select, is_ended FROM message_poll WHERE id = '$messageId'");
+                    $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select, ended_date FROM message_poll WHERE id = '$messageId'");
 
                     if ($pollMessage != "false") {
 
@@ -872,7 +841,7 @@ class Action {
 
                         // TODO: This can be combined with optionArray
                         $result = [];
-                        if ($pollMessage[0][0][3] == '1') {
+                        if ($pollMessage[0][0][3] != '') {
                             if ($options != "false") {
                                 foreach ($options[0] as $option) {
                                     $votes = $db->single_dynamic_query("SELECT * FROM vote WHERE poll_option_id = '$option[0]'");
@@ -886,7 +855,7 @@ class Action {
                         }
 
                         $type = "poll";
-                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray, 'voted' => $voted, 'ended' => $pollMessage[0][0][3], 'result' => $result);
+                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray, 'voted' => $voted, 'endedDate' => $pollMessage[0][0][3], 'result' => $result);
                     }
 
                     $isMine = $message[2] == $userId;
@@ -899,6 +868,53 @@ class Action {
         }
 
         echo $response;
+        exit;
+    }
+
+    function getUpdatedMessages($updatedLaterThan) {
+        $resultArray = [];
+
+        global $session;
+        global $db;
+
+        $groupId = $session->getData("GroupId");
+
+        $editedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE edited_date > '$updatedLaterThan' AND groupchat_id = '$groupId'");
+        
+        if ($editedMessages != "false") {
+            foreach ($editedMessages[0] as $message) {
+                $type = $db->getMessageType($message[0]);
+                switch ($type) {
+                    case "text":
+                        $data = $db->single_dynamic_query("SELECT data FROM message_text WHERE id = '$message[0]'")[0][0][0];
+                        array_push($resultArray, array('id' => $message[0], 'type' => $type, 'change' => 'edit', 'content' => $data));
+                    break;
+                }
+            }
+        }
+
+        $deletedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE deleted_date > '$updatedLaterThan'");
+
+        if ($deletedMessages != "false") {
+            foreach ($deletedMessages[0] as $message) {
+                $type = $db->getMessageType($message[0]);
+                array_push($resultArray, array('id' => $message[0], 'type' => $type, 'change' => 'delete', 'content' => ''));
+            }
+        }
+
+        $endedPolls = $db->single_dynamic_query("SELECT id FROM message_poll WHERE ended_date > '$updatedLaterThan'");
+
+        if ($endedPolls != "false") {
+            foreach ($endedPolls[0] as $poll) {
+                array_push($resultArray, array('id' => $poll[0], 'type' => "poll", 'change' => 'end', 'content' => ''));
+            }
+        }
+
+        if (empty($resultArray)) {
+            echo '';
+        } else {
+            echo json_encode($resultArray);
+        }
         exit;
     }
 
@@ -1034,11 +1050,11 @@ class Action {
         $userId = $session->getData("UserId");
 
         // Check if the current user created the poll
-        $poll = $db->single_dynamic_query("SELECT is_ended FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message.id = '$messageId' AND user_id = '$userId'");
+        $poll = $db->single_dynamic_query("SELECT ended_date FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message.id = '$messageId' AND user_id = '$userId'");
 
         if ($poll != "false") {
             // Check if the poll already ended
-            if ($poll[0][0][0] == '0') {
+            if ($poll[0][0][0] == '') {
                 // Check if all users participated
                 $allUsersInPoll = $db->single_dynamic_query("SELECT user_group.user_id FROM message INNER JOIN user_group ON message.groupchat_id = user_group.group_id WHERE message.id = '$messageId'");
                 $participants = $db->single_dynamic_query("SELECT DISTINCT vote.user_id FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id INNER JOIN message ON poll_option.message_poll_id = message.id WHERE message.id = '$messageId'");

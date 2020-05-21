@@ -258,8 +258,9 @@ class Database {
 	}
 
 	function endPoll($pollId) {
+		$now = $this->getCurrentDateTime();
 		$this->open_db();
-		$sql = "UPDATE message_poll SET is_ended = 1 WHERE id = '$pollId'";
+		$sql = "UPDATE message_poll SET ended_date = '$now' WHERE id = '$pollId'";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
 	}
@@ -269,6 +270,20 @@ class Database {
 		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
 		$d = new DateTime( date('Y-m-d H:i:s.'.$micro, $t) );
 		return $d->format("Y-m-d H:i:s.u");
+	}
+
+	function getMessageType($messageId) {
+		$type = '';
+		if ($this->single_dynamic_query("SELECT id FROM message_text WHERE id = '$messageId'") != "false") {
+			$type = "text";
+		} else if ($this->single_dynamic_query("SELECT id FROM message_image WHERE id = '$messageId'") != "false") {
+			$type = "image";
+		} else if ($this->single_dynamic_query("SELECT id FROM message_video WHERE id = '$messageId'") != "false") {
+			$type = "video";
+		} else if ($this->single_dynamic_query("SELECT id FROM message_poll WHERE id = '$messageId'") != "false") {
+			$type = "poll";
+		}
+		return $type;
 	}
 }
 

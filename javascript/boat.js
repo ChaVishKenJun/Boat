@@ -1,5 +1,6 @@
 var dataLoader; // Interval object for polling data
 var timestamp;
+var isLoaded = false;
 
 function toDateString(datetime) {
     let string ='';
@@ -202,7 +203,6 @@ function deleteMessage(messageId)
             data: { messageId : messageId }
         })
         .done(function (response, textStatus, jqXHR) {
-            loadMessages();
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
             console.log("Error" + textStatus + errorThrown);
@@ -301,14 +301,21 @@ function formatNotificationBell(hasNotifications) {
 function loadData() {
     /// <summary>Load data when page is newly open.</summary>
     loadMessages();
+    timestamp = new Date();
 }
 
 function pollData() {
     /// <summary>Check for newly created data and update the content.</summary>
     loadMessages(timestamp);
+    updateMessages(timestamp);
+
+    if (isLoaded) {
+        timestamp = new Date();
+        isLoaded = false;
+    }
 }
 
-function loadMessages(laterThan = null) {    
+function loadMessages(laterThan = null) {
     $.ajax({
         url: "?action=aLoadMessages" + (laterThan != null ? "&laterThan=" + toDateString(laterThan) : ''),
         type: "get"
@@ -318,7 +325,7 @@ function loadMessages(laterThan = null) {
             if (response != '') {
                 $('#messages').html(formatMessages(response));                
                 scrollDown();
-                timestamp = new Date();
+                isLoaded = true;
             } else {
                 $('#messages').html('This chat is still new.');
             }
@@ -326,7 +333,7 @@ function loadMessages(laterThan = null) {
             if (response != '') {
                 $('#messages').append(formatMessages(response));
                 scrollDown();
-                timestamp = new Date();
+                isLoaded = true;
             }
         }
     })
@@ -335,6 +342,7 @@ function loadMessages(laterThan = null) {
         $('#messages').html("An error has occured. Please try again later.");
     })
     .always(function () {
+        return isLoaded;
     });
 }
 
@@ -382,7 +390,7 @@ function formatMessages(rawMessage) {
     
                     result += "<div class='poll bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
     
-                    if (message.data.ended == '1') {
+                    if (message.data.endedDate != null) {
                         result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
                         result += formatPollResult(message.data.result);
                     } else {
@@ -489,6 +497,66 @@ function formatMessages(rawMessage) {
     return result;
 }
 
+function updateMessages(updatedLaterThan) {
+    $.ajax({
+        url: "?action=aGetUpdatedMessages&updatedLaterThan=" + toDateString(updatedLaterThan),
+        type: "get" 
+    })
+    .done(function (response, textStatus, jqXHR) {
+        if (response != '' && response != "false") {
+            updatedMessages = JSON.parse(response);
+
+            updatedMessages.forEach(message => {
+                switch (message.change) {
+                    case 'delete':
+                    // Get message block
+                    var message = $('.message[message-id=' + message.id + ']');
+                    var isMine = $(message.find('.row')[0]).find('.col').find('div').hasClass('float-right') || $(message.find('.row')[0]).find('.col').find('span').hasClass('float-right');
+                    var html = '';
+                    html += "<span class='" + (isMine ? " float-right" : " float-left") + "'>";
+                    html += "<span class='data'>Message deleted</span>";
+                    html += "</span>";
+                    message.html(html);
+                    break;
+                }
+            });
+            
+
+
+            isLoaded = true;
+        }
+    })
+/*
+
+    $.ajax({
+        url: "?action=aLoadMessages" + (laterThan != null ? "&laterThan=" + toDateString(laterThan) : ''),
+        type: "get"
+    })
+    .done(function (response, textStatus, jqXHR) {
+        if (laterThan == null) {
+            if (response != '') {
+                $('#messages').html(formatMessages(response));                
+                scrollDown();
+                timestamp = new Date();
+            } else {
+                $('#messages').html('This chat is still new.');
+            }
+        } else {
+            if (response != '') {
+                $('#messages').append(formatMessages(response));
+                scrollDown();
+                timestamp = new Date();
+            }
+        }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("An error occured while loading messages: " + textStatus + errorThrown);
+        $('#messages').html("An error has occured. Please try again later.");
+    })
+    .always(function () {
+    });*/
+}
+
 $('#input input').on('keyup keypress', function(e) {
     var keyCode = e.keyCode || e.which;
     if (keyCode === 13) { 
@@ -546,9 +614,7 @@ function endPoll(messageId) {
         data: { messageId: messageId }
     })
     .done(function (response, textStatus, jqXHR) {
-        if (response == "true") {    
-            // Poll is successfully ended. Refresh the chat.
-            loadMessages();
+        if (response == "true") {
         } else if (response == "false") {
             // Not every member has participated. Ask user again.
             if (confirm('Not everyone in the group has voted yet. Do you still want to end the poll?')) {
@@ -609,7 +675,6 @@ function submitEditMessage(e) {
         data: { data: JSON.stringify($(e.target).serializeArray()) }
     })
     .done(function (response, textStatus, jqXHR) {
-        loadMessages();
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
