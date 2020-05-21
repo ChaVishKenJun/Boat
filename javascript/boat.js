@@ -1,8 +1,8 @@
 var dataLoader; // Interval object for polling data
-var timestamp; // Timestamp when the data is loaded last time
+var lastMessageId = 0;
 
 function toDateString(datetime) {
-    return datetime.getFullYear().toString() + '-' + (datetime.getMonth() + 1).toString() + '-' + datetime.getDate().toString() + ' ' + datetime.getHours() + ':' + datetime.getMinutes() + ':' + datetime.getSeconds() + '.' + datetime.getMilliseconds() + '000';
+    return datetime.getFullYear().toString() + '-' + (datetime.getMonth() + 1).toString() + '-' + datetime.getDate().toString() + ' ' + ("0" + datetime.getHours()).slice(-2) + ':' + ("0" + datetime.getMinutes()).slice(-2) + ':' + ("0" + datetime.getSeconds()).slice(-2) + '.' + datetime.getMilliseconds() + '000';
 }
 
 function scrollDown() {
@@ -290,20 +290,18 @@ function loadData() {
 
 function pollData() {
     /// <summary>Check for newly created data and update the content.</summary>
-    loadMessages(timestamp);
+    loadMessages(lastMessageId);
 }
 
-function loadMessages(laterThan = null) {
-    timestamp = new Date();
-    
+function loadMessages(after) {    
     $.ajax({
-        url: "?action=aLoadMessages" + (laterThan != null ? "&laterThan=" + toDateString(laterThan) : ''),
+        url: "?action=aLoadMessages" + (after != null ? "&after=" + lastMessageId : ''),
         type: "get"
     })
     .done(function (response, textStatus, jqXHR) {
-        if (laterThan == null) {
+        if (after == null) {
             if (response != '') {
-                $('#messages').html(formatMessages(response));
+                $('#messages').html(formatMessages(response));                
                 scrollDown();
             } else {
                 $('#messages').html('This chat is still new.');
@@ -363,7 +361,7 @@ function formatMessages(rawMessage) {
                 case "video":
                     break;
                 case "poll":
-                    const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(this);'>End</a>";
+                    const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(" + message.messageId + ");'>End</a>";
     
                     result += "<div class='poll bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
     
@@ -469,6 +467,8 @@ function formatMessages(rawMessage) {
         result += "</div>";
         result += "</div>";
         result += "</div>";
+
+        lastMessageId = message.messageId;
     });
     
     return result;
@@ -524,11 +524,11 @@ function vote(e) {
     return false;
 }
 
-function endPoll(sender) {
+function endPoll(messageId) {
     $.ajax({
         url: "?action=aEndPoll",
         type: "post",
-        data: { messageId: $(sender).parent().parent().parent().parent().parent().parent().attr('message-id') }
+        data: { messageId: messageId }
     })
     .done(function (response, textStatus, jqXHR) {
         if (response == "true") {    
@@ -540,7 +540,7 @@ function endPoll(sender) {
                 $.ajax({
                     url: "?action=aEndPoll",
                     type: "post",
-                    data: { messageId: $(sender).parent().parent().parent().parent().parent().parent().attr('message-id') , force: "true" }
+                    data: { messageId: messageId , force: "true" }
                 })
                 .done(function (forceResponse, forceTextStatus, forceJqXHR) {
                     if (forceResponse == "true") {    
@@ -562,12 +562,16 @@ function formatPollResult(pollResult) {
     if (max == 0) {
         result = "<div class='text-center mb-2'>No result to show</div>";
     } else {
-        pollResult.sort((a,b) => (a.count > b.count) ? 1 : ((b.count > a.count) ? -1 : 0)); 
+        pollResult.sort((a,b) => (a.count < b.count) ? 1 : ((b.count < a.count) ? -1 : 0)); 
 
         pollResult.forEach(item => {
             let portion = item.count * 100 / max;
             result += '<div class="progress mb-2">';
-            result += '<div class="progress-bar" role="progressbar" style="width: ' + portion + '%;" aria-valuenow="' + portion + '" aria-valuemin="0" aria-valuemax="100">' + item.name + ' (' + item.count + ')' + '</div>';
+            if (item.count != 0) {
+                result += '<div class="progress-bar" role="progressbar" style="width: ' + portion + '%;" aria-valuenow="' + portion + '" aria-valuemin="0" aria-valuemax="100">' + item.name + ' (' + item.count + ')' + '</div>';
+            } else {
+                result += '<div class="progress-bar bg-light text-dark" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">' + item.name + ' (' + item.count + ')' + '</div>';
+            }
             result += '</div>';
         });
 

@@ -79,7 +79,7 @@ class Action {
                 $this->sendMessage($_GET["message"]);
             break;
             case "aLoadMessages":
-                $this->loadMessages($_GET["laterThan"]);
+                $this->loadMessages($_GET["after"]);
             break;
             case "aUpdateNotificationsToRead":
                 $this->updateNotificationsToRead();
@@ -808,7 +808,7 @@ class Action {
         }
     }
 
-    function loadMessages($laterThan) {
+    function loadMessages($after) {
         $response = '';
 
         global $session;
@@ -822,8 +822,8 @@ class Action {
         if (isset($groupId) && isset($userId)) {
             $resultArray = [];
             
-            if ($laterThan != '') {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date >= \"$laterThan\" ORDER BY message.date LIMIT 50");
+            if ($after != '') {
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.id > $after ORDER BY message.date LIMIT 50");
             } else {
                 $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
             }
@@ -1041,7 +1041,7 @@ class Action {
             if ($poll[0][0][0] == '0') {
                 // Check if all users participated
                 $allUsersInPoll = $db->single_dynamic_query("SELECT user_group.user_id FROM message INNER JOIN user_group ON message.groupchat_id = user_group.group_id WHERE message.id = '$messageId'");
-                $participants = $db->single_dynamic_query("SELECT vote.user_id FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id INNER JOIN message ON poll_option.message_poll_id = message.id WHERE message.id = '$messageId'");
+                $participants = $db->single_dynamic_query("SELECT DISTINCT vote.user_id FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id INNER JOIN message ON poll_option.message_poll_id = message.id WHERE message.id = '$messageId'");
 
                 if ($participants == "false" && $force != "true") {
                     $response = "false";
