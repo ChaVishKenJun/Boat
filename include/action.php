@@ -822,8 +822,8 @@ class Action {
         if (isset($groupId) && isset($userId)) {
             $resultArray = [];
             
-            if ($laterThan != '') {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.id > $after ORDER BY message.date LIMIT 50");
+            if ($laterThan != '') {                
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date > '$laterThan' ORDER BY message.date LIMIT 50");
             } else {
                 $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
             }

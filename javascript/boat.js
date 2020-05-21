@@ -301,13 +301,11 @@ function formatNotificationBell(hasNotifications) {
 function loadData() {
     /// <summary>Load data when page is newly open.</summary>
     loadMessages();
-    timestamp = new Date();
 }
 
 function pollData() {
     /// <summary>Check for newly created data and update the content.</summary>
     loadMessages(timestamp);
-    timestamp = new Date();
 }
 
 function loadMessages(laterThan = null) {    
@@ -320,6 +318,7 @@ function loadMessages(laterThan = null) {
             if (response != '') {
                 $('#messages').html(formatMessages(response));                
                 scrollDown();
+                timestamp = new Date();
             } else {
                 $('#messages').html('This chat is still new.');
             }
@@ -327,6 +326,7 @@ function loadMessages(laterThan = null) {
             if (response != '') {
                 $('#messages').append(formatMessages(response));
                 scrollDown();
+                timestamp = new Date();
             }
         }
     })
