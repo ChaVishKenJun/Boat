@@ -238,7 +238,7 @@ class Database {
 
 	function endPoll($pollId) {
 		$this->open_db();
-		$sql = "UPDATE message_poll SET isEnded = 1 WHERE id = '$pollId'";
+		$sql = "UPDATE message_poll SET is_ended = 1 WHERE id = '$pollId'";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
 	}

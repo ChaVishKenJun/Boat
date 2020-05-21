@@ -367,7 +367,7 @@ function formatMessages(rawMessage) {
     
                     result += "<div class='.container-sm bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
     
-                    if (message.data.isEnded == '1') {
+                    if (message.data.ended == '1') {
                         result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
                         
                     } else {
