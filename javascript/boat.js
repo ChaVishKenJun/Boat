@@ -11,6 +11,7 @@ function scrollDown() {
 
 $(document).ready(function () {
     var messagePopover = {
+        trigger: 'manual',
         placement: 'bottom',
         container: 'body',
         html: true,
@@ -62,18 +63,6 @@ $(document).ready(function () {
                     $('#userQuery').parent().append(result);
                     $('#dropdownMenuButton').click();
                     
-                    /*
-                    <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Dropdown button
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
-                        <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
-                    </div>
-                    */
                 }
             };
             xmlhttp.open("GET", "?action=aQueryUser&query=" + query, true);
@@ -97,10 +86,6 @@ $(document).ready(function () {
             container: 'body'
         });
     });
-    
-    $('.popover-dismiss').popover({
-        trigger: 'focus'
-    });
 
     //notifications
     var xmlhttp = new XMLHttpRequest();
@@ -114,11 +99,6 @@ $(document).ready(function () {
     };    
     xmlhttp.open("GET", "?action=aLoadNotifications", true);
     xmlhttp.send();
-    
-
-    $('.popover-dismiss').popover({
-        trigger: 'focus'
-    });
 });
 
 /* ----------------------------------------------------- GROUP ----------------------------------------------------- */
@@ -366,6 +346,7 @@ function formatMessages(rawMessage) {
             result += "<div class='row'>";
             result += "<div class='col position-relative'>";
             result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
+            
             result += '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
             result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
             result += '</svg>';
