@@ -848,7 +848,7 @@ class Action {
                         $data = $videoMessage[0][0][0];
                     }
 
-                    $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select, isEnded FROM message_poll WHERE id = '$messageId'");
+                    $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select, is_ended FROM message_poll WHERE id = '$messageId'");
 
                     if ($pollMessage != "false") {
 
@@ -879,7 +879,7 @@ class Action {
                         }
 
                         $type = "poll";
-                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray, 'voted' => $voted, 'isEnded' => $pollMessage[0][0][3], 'result' => $result);
+                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray, 'voted' => $voted, 'ended' => $pollMessage[0][0][3], 'result' => $result);
                     }
 
                     $isMine = $message[2] == $userId;
@@ -1027,7 +1027,7 @@ class Action {
         $userId = $session->getData("UserId");
 
         // Check if the current user created the poll
-        $poll = $db->single_dynamic_query("SELECT isEnded FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message.id = '$messageId' AND user_id = '$userId'");
+        $poll = $db->single_dynamic_query("SELECT is_ended FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message.id = '$messageId' AND user_id = '$userId'");
 
         if ($poll != "false") {
             // Check if the poll already ended
