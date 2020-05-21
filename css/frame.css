@@ -198,3 +198,8 @@ body {
 .poll {
 	min-width: 20%;
 }
+
+#pinnedMessage{
+	margin-top: 55px !important;
+
+}

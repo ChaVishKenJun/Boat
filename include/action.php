@@ -1122,9 +1122,12 @@ class Action {
 
     function pinMessage($messageId) {
         global $db;
+        global $session;
+
+        $groupId = $session->getData("GroupId");
 
         try {    
-            $db->pinMessage($messageId);
+            $db->pinMessage($messageId, $groupId);
             echo "true";
         } catch (Exception $e) {
             echo "false";
