@@ -192,4 +192,5 @@ body {
 
 .message-button:focus {
 	outline: 0;
+	display: block !important;
 }
