@@ -93,6 +93,9 @@ class Action {
             case "aVote":
                 $this->vote($_POST["data"]);
             break;
+            case "aEndPoll":
+                $this->endPoll($_POST["messageId"], $_POST["force"]);
+            break;
         }
     }
     
@@ -797,6 +800,8 @@ class Action {
     }
 
     function loadMessages($laterThan) {
+        $response = '';
+
         global $session;
         global $db;
         
@@ -840,7 +845,7 @@ class Action {
                         $data = $videoMessage[0][0][0];
                     }
 
-                    $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select FROM message_poll WHERE id = '$messageId'");
+                    $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select, isEnded FROM message_poll WHERE id = '$messageId'");
 
                     if ($pollMessage != "false") {
 
@@ -854,16 +859,24 @@ class Action {
                             }
                         }
 
-                        $votes = $db->single_dynamic_query("SELECT * FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id WHERE user_id = '$userId' AND message_poll_id = '$messageId'");
+                        $voted = $db->single_dynamic_query("SELECT * FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id WHERE user_id = '$userId' AND message_poll_id = '$messageId'") != "false";
 
-                        $voted = false;
-
-                        if ($votes != "false") {
-                            $voted = true;
+                        $result = [];
+                        if ($pollMessage[0][0][3] == '1') {
+                            if ($options != "false") {
+                                foreach ($options[0] as $option) {
+                                    $votes = $db->single_dynamic_query("SELECT * FROM vote WHERE poll_option_id = '$option[0]'");
+                                    if ($votes != "false") {
+                                        array_push($result, array('id' => $option[0], 'count' => count($votes[0])));
+                                    } else {
+                                        array_push($result, array('id' => $option[0], 'count' => 0));
+                                    }
+                                }
+                            }
                         }
 
                         $type = "poll";
-                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray, 'voted' => $voted);
+                        $data = array('title' => $pollMessage[0][0][0], 'due' => $pollMessage[0][0][1], 'multiselect' => $pollMessage[0][0][2], 'options' => $optionArray, 'voted' => $voted, 'isEnded' => $pollMessage[0][0][3], 'result' => $result);
                     }
 
                     $isMine = $message[2] == $userId;
@@ -871,49 +884,12 @@ class Action {
                     array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data));
                 }
                 
-                echo json_encode($resultArray);
-                exit;
-            } else {
-                echo '';
-                exit;
+                $response = json_encode($resultArray);
             }
-            
-
-
-            /*$messages = $db->single_dynamic_query("SELECT user.id, user.firstname, user.lastname, message.date, message.id, message_text.data FROM message INNER JOIN user ON message.user_id = user.id INNER JOIN message_text ON message.id = message_text.id WHERE groupchat_id = '$groupId' ORDER BY message.date");
-
-            if ($messages != "false") {
-                $result = '';
-
-                for ($i = 0; $i < count($messages[0]); $i++) {
-                    for ($j = 0; $j < count($messages[0][$i]); $j++) {
-                        if ($j == 0) {
-                            if ($messages[0][$i][0] == $userId) {
-                                $result .= "true";
-                            } else {
-                                $result .= "false";
-                            }
-                        } else {
-                            $result .= $messages[0][$i][$j];
-                        }
-                        
-                        if ($j != count($messages[0][$i]) - 1) {
-                            $result .= ',';
-                        }
-                    }
-                    if ($i != count($messages[0]) - 1) {
-                        $result .= '\n';
-                    }
-                }
-                echo $result;
-            } else {
-                echo "";
-            }
-            exit;*/
-        } else {
-            echo '';
-            exit;
         }
+
+        echo $response;
+        exit;
     }
 
     function loadNotifications() {
@@ -1036,6 +1012,46 @@ class Action {
         } catch (Exception $e) {
             echo "false";
         }
+        exit;
+    }
+
+    function endPoll($messageId, $force) {
+        $response = '';
+
+        global $db;
+        global $session;
+
+        $userId = $session->getData("UserId");
+
+        // Check if the current user created the poll
+        $poll = $db->single_dynamic_query("SELECT isEnded FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message.id = '$messageId' AND user_id = '$userId'");
+
+        if ($poll != "false") {
+            // Check if the poll already ended
+            if ($poll[0][0][0] == '0') {
+                // Check if all users participated
+                $allUsersInPoll = $db->single_dynamic_query("SELECT user_group.user_id FROM message INNER JOIN user_group ON message.groupchat_id = user_group.group_id WHERE message.id = '$messageId'");
+                $participants = $db->single_dynamic_query("SELECT vote.user_id FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id INNER JOIN message ON poll_option.message_poll_id = message.id WHERE message.id = '$messageId'");
+
+                if (count($allUsersInPoll[0]) == count($participants[0])) {
+                    // End poll
+                    $db->endPoll($messageId);
+                    $response = "true";
+                } else {
+                    // End poll after asking user once again. 
+                    if ($force == "true") {
+                        $db->endPoll($messageId);
+                        $response = "true";
+                    } else {
+                        $response = "false";
+                    }
+                }
+            } else {
+                $response = "Poll is already ended.";
+            }
+        }
+
+        echo $response;
         exit;
     }
 }

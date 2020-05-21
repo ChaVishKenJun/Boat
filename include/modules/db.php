@@ -186,6 +186,14 @@ class Database {
 		return $messageId;
 	}
 
+
+	function updateNotificationsIsReadToRead($userId) {
+		$this->open_db();
+		$sql="UPDATE notification SET is_read =1 WHERE user_id = $userId";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
 	function createPoll($groupId, $userId, $title, $datetime, $multiSelect) {
 		$t = microtime(true);
 		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
@@ -204,6 +212,14 @@ class Database {
 		return $messageId;
 	}
 
+	function addOptionToPoll($pollId, $option) {
+		$this->open_db();
+		$sql = "INSERT INTO poll_option (name, message_poll_id) VALUES ('$option', '$pollId')";
+		$this->db_connection->query($sql);
+		$optionId = $this->db_connection->insert_id;
+		return $optionId;
+	}
+
 	function vote($userId, $optionId) {
 		$this->open_db();
 		$sql = "INSERT INTO vote (user_id, poll_option_id) VALUES ('$userId', '$optionId')";
@@ -213,86 +229,11 @@ class Database {
 		return $voteId;
 	}
 
-	function addOptionToPoll($pollId, $option) {
+	function endPoll($pollId) {
 		$this->open_db();
-		$sql = "INSERT INTO poll_option (name, message_poll_id) VALUES ('$option', '$pollId')";
-		$this->db_connection->query($sql);
-		$optionId = $this->db_connection->insert_id;
-		return $optionId;
-	}
-
-	function updateNotificationsIsReadToRead($userId) {
-		$this->open_db();
-		$sql="UPDATE notification SET is_read =1 WHERE user_id = $userId";
+		$sql = "UPDATE message_poll SET isEnded = 1 WHERE id = '$pollId'";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
-	}
-
-	/* Static Functions - Examples */
-	function getid_detail($condition) {
-		//its a static prepared and encryptet sql SELECT
-		$sql="SELECT id from detail where id=$condition";
-	}
-	
-	function put_detail($condition) {
-		//its a static prepared and encryptet sql INSERT
-		$sql="SELECT id from detail where id=$condition";
-	}
-	
-	function getid_person($firstname, $lastname) {
-		//its a static prepared and encryptet sql SELECT
-		$this->open_db();
-		$sql="SELECT personId from person where firstname='$firstname' AND lastname='$lastname'";
-		$result = $this->db_connection->query($sql);
-		$row = $result->fetch_assoc();
-		//$row = mysql_fetch_array($result);
-		$personId = $row["personId"];
-		return $personId;
-	}
-	
-	function getid_item($title) {
-		//its a static prepared and encryptet sql SELECT
-		$this->open_db();
-		$sql="SELECT ItemId from item where title='$title'";
-		$result = $this->db_connection->query($sql);
-		$row = $result->fetch_assoc();
-		//$row = mysql_fetch_array($result);
-		$personId = $row["ItemId"];
-		return $personId;
-	}
-	
-	public function Search($search) {
-		$this->open_db();
-		$sql = "SELECT i.ItemId, i.Title, p.FirstName, p.LastName, c.categoryname FROM item i INNER JOIN person p ON i.PersonId = p.PersonId INNER JOIN itemcategory c ON i.ItemCategoryId = c.ItemCategoryId where i.Title like '%$search%' or c.CategoryName like '%$search%'";
-		$result = $this->db_connection->query($sql);
-		return $result;
-	}
-	
-	public function getItemData($itemId) {
-		$this->open_db();
-		$sql = "Select Title, Type, p.FirstName, p.LastName, ItemCategoryId from item inner join person p on item.PersonId = p.PersonId where ItemId = $itemId";
-		$result = $this->db_connection->query($sql);
-		return $result;
-	}
-	
-	public function getClientData($clientId) {
-		$this->open_db();
-		$sql = "Select FirstName, LastName, MobileNumber from person where personId = $clientId";
-		$result = $this->db_connection->query($sql);
-		return $result;
-	}
-	
-	public function deleteItem($itemId) {
-		$this->open_db();
-		$sql = "DELETE from activityhistory where ItemId = $itemId; delete from item where ItemId = $itemId;";
-		$this->db_connection->query($sql);
-	}
-	
-	public function deleteClient($clientId) {
-		$this->open_db();
-		$sql = "DELETE from activityhistory where personId = $clientId; delete from person where personId = $clientId;";
-		$result = $this->db_connection->query($sql);
-		return $result;
 	}
 }
 

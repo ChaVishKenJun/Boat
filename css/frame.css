@@ -177,3 +177,19 @@ body {
 .message:last-of-type {
 	margin-bottom: 1.5em;
 }
+
+.message-button {
+	position: absolute;
+	top: 0.1em;
+	right: 1.9em;
+	display: none;
+	cursor: pointer;
+}
+
+.message:hover .message-button {
+	display: block;
+}
+
+.message-button:focus {
+	outline: 0;
+}
