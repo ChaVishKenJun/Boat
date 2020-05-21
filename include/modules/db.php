@@ -113,7 +113,7 @@ class Database {
 		$statement = $this->db_connection->prepare($command); 
 		$execution_count = 1;
 		while($execution_count <= $number_of_execution) {				
-			$statement->execute(); 
+			$statement->execute();
 			$execution_count++;
 		}
 		return $execution_count;
@@ -190,6 +190,13 @@ class Database {
 	function updateNotificationsIsReadToRead($userId) {
 		$this->open_db();
 		$sql="UPDATE notification SET is_read =1 WHERE user_id = $userId";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
+	function deleteMessage($messageId) {
+		$this->open_db();
+		$sql = "UPDATE message SET is_deleted = 1 WHERE id = $messageId";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
 	}

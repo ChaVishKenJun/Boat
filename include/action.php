@@ -96,6 +96,9 @@ class Action {
             case "aEndPoll":
                 $this->endPoll($_POST["messageId"], $_POST["force"]);
             break;
+            case "aDeleteMessage":
+                $this->deleteMessage($_POST["messageId"]);
+            break;
         }
     }
     
@@ -814,9 +817,9 @@ class Action {
             $resultArray = [];
             
             if ($laterThan != '') {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date >= \"$laterThan\" ORDER BY message.date LIMIT 50");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date >= \"$laterThan\" ORDER BY message.date LIMIT 50");
             } else {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
             }
 
             if ($messages != "false") {
@@ -881,7 +884,7 @@ class Action {
 
                     $isMine = $message[2] == $userId;
 
-                    array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data));
+                    array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data, 'isDeleted' => $message[5]));
                 }
                 
                 $response = json_encode($resultArray);
@@ -1052,6 +1055,18 @@ class Action {
         }
 
         echo $response;
+        exit;
+    }
+
+    function deleteMessage($messageId) {
+        global $db;
+
+        try {    
+            $db->deleteMessage($messageId);
+            echo "true";
+        } catch (Exception $e) {
+            echo "false";
+        }
         exit;
     }
 }

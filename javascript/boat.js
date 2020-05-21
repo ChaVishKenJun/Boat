@@ -16,7 +16,7 @@ $(document).ready(function () {
         html: true,
         selector: '.message-button', //Sepcify the selector here
         content: function () {
-            var messageId = $(this).parent().attr('message-id');
+            var messageId = $(this).parent().parent().parent().attr('message-id');
             var div = $('<div></div>');
                 div.append('<button type="button" class="btn btn-block" data-toggle="modal" data-target="#newPollModal">Edit</svg></button>');
                 div.append('<button type="button" class="btn btn-block">Pin</button>');
@@ -198,10 +198,23 @@ function sendMessage() {
     $('#input').find('input').val('');
 }
 
-
 function deleteMessage(messageId)
 {
     if (confirm('Are you sure you want to delete this message?')) {
+        $.ajax({
+            url: "?action=aDeleteMessage",
+            type: "post",
+            data: { messageId : messageId }
+        })
+        .done(function (response, textStatus, jqXHR) {
+            loadMessages();
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log("Error" + textStatus + errorThrown);
+        })
+        .always(function () {
+
+        });
     } else {
     }
 }
@@ -345,106 +358,116 @@ function formatMessages(rawMessage) {
             result += "<span class='user'>" + message.userFirstName + ' ' + message.userLastName + "</span>";
             result += "</div>";
             result += "</div>";
-        }
-        
-        result += "<div class='row'>";
-        result += "<div class='col position-relative'>";
-        result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
-        result += '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
-        result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
-        result += '</svg>';
-        result += '</a>';       
+        }                   
 
-        switch (message.type) {
-            case "text":
-                result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
-                result += "<span class='data'>" + message.data + "</span>";
-                result += "</span>";
-                break;
-            case "image":
-                break;
-            case "video":
-                break;
-            case "poll":
-                const endButtonHtml = "<button class='btn btn-primary btn-sm btn-block mt-2 mb-1' onclick='return endPoll(this);'>End</button>";
+        if(message.isDeleted == "0")
+        {
 
-                result += "<div class='.container-sm bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+            result += "<div class='row'>";
+            result += "<div class='col position-relative'>";
+            result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
+            result += '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
+            result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
+            result += '</svg>';
+            result += '</a>';   
 
-                if (message.data.isEnded == '1') {
-                    result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
-                    
-                } else {
-                    if (message.data.voted == '1') {
+            switch (message.type) {
+                case "text":
+                    result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+                    result += "<span class='data'>" + message.data + "</span>";
+                    result += "</span>";
+                    break;
+                case "image":
+                    break;
+                case "video":
+                    break;
+                case "poll":
+                    const endButtonHtml = "<button class='btn btn-primary btn-sm btn-block mt-2 mb-1' onclick='return endPoll(this);'>End</button>";
+    
+                    result += "<div class='.container-sm bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+    
+                    if (message.data.isEnded == '1') {
                         result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
-                        result += "<div class='row mt-2'>";
-                        result += "<div class='col text-center text-success'>";
-                        result += '<svg class="bi bi-check" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
-                        result += '<path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
-                        result += '</svg>';
-                        result += "</div>";
-                        result += "</div>";
-                        result += "<div class='row'>";
-                        result += "<div class='col text-center text-success'>";
-                        result += '<span class="font-weight-light">You voted!</span>';
-                        result += "</div>";
-                        result += "</div>";
-                        if (message.isMine) {
-                            result += endButtonHtml;
-                        }
                         
                     } else {
-                        result += "<form onsubmit='return vote(event);'>";
-                        result += "<fieldset>";
-                        result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
-        
-                        if (message.data.multiselect == "1") {
-                            for (let index = 0; index < message.data.options.length; index++) {
-                                const option = message.data.options[index];
-                                
-                                result += '<div class="input-group mb-3">';
-                                result += '<div class="input-group-prepend">';
-                                result += '<div class="input-group-text">';
-                                result += '<input name="' + message.messageId + '" type="checkbox" value="' + option.id + '" id="option' + option.id + '">';
-                                result += '</div>';
-                                result += '</div>';
-                                result += '<label class="form-control" for="option' + option.id +'">';
-                                result += option.name;
-                                result += '</label>';
-                                result += '</div>';
+                        if (message.data.voted == '1') {
+                            result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
+                            result += "<div class='row mt-2'>";
+                            result += "<div class='col text-center text-success'>";
+                            result += '<svg class="bi bi-check" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
+                            result += '<path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
+                            result += '</svg>';
+                            result += "</div>";
+                            result += "</div>";
+                            result += "<div class='row'>";
+                            result += "<div class='col text-center text-success'>";
+                            result += '<span class="font-weight-light">You voted!</span>';
+                            result += "</div>";
+                            result += "</div>";
+                            if (message.isMine) {
+                                result += endButtonHtml;
                             }
+                            
                         } else {
-                            for (let index = 0; index < message.data.options.length; index++) {
-                                const option = message.data.options[index];
-        
-                                result += '<div class="input-group mb-3">';
-                                result += '<div class="input-group-prepend">';
-                                result += '<div class="input-group-text">';
-                                result += '<input name="' + message.messageId + '"type="radio" id="radios' + message.messageId + '" value="' + option.id + '" checked>';
-                                result += '</div>';
-                                result += '</div>';
-                                result += '<label class="form-control" for="radios' + message.messageId + '">';
-                                result += option.name;
-                                result += '</label>';
-                                result += '</div>';
+                            result += "<form onsubmit='return vote(event);'>";
+                            result += "<fieldset>";
+                            result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
+            
+                            if (message.data.multiselect == "1") {
+                                for (let index = 0; index < message.data.options.length; index++) {
+                                    const option = message.data.options[index];
+                                    
+                                    result += '<div class="input-group mb-3">';
+                                    result += '<div class="input-group-prepend">';
+                                    result += '<div class="input-group-text">';
+                                    result += '<input name="' + message.messageId + '" type="checkbox" value="' + option.id + '" id="option' + option.id + '">';
+                                    result += '</div>';
+                                    result += '</div>';
+                                    result += '<label class="form-control" for="option' + option.id +'">';
+                                    result += option.name;
+                                    result += '</label>';
+                                    result += '</div>';
+                                }
+                            } else {
+                                for (let index = 0; index < message.data.options.length; index++) {
+                                    const option = message.data.options[index];
+            
+                                    result += '<div class="input-group mb-3">';
+                                    result += '<div class="input-group-prepend">';
+                                    result += '<div class="input-group-text">';
+                                    result += '<input name="' + message.messageId + '"type="radio" id="radios' + message.messageId + '" value="' + option.id + '" checked>';
+                                    result += '</div>';
+                                    result += '</div>';
+                                    result += '<label class="form-control" for="radios' + message.messageId + '">';
+                                    result += option.name;
+                                    result += '</label>';
+                                    result += '</div>';
+                                }
                             }
-                        }
+            
+                            result += "<button class='btn btn-primary btn-sm btn-block' type='submit'>Vote</button>";
         
-                        result += "<button class='btn btn-primary btn-sm btn-block' type='submit'>Vote</button>";
-    
-                        if (message.isMine) {
-                            result += endButtonHtml;
+                            if (message.isMine) {
+                                result += endButtonHtml;
+                            }
+        
+                            result += "</fieldset>";
+                            result += "</form>";
                         }
-    
-                        result += "</fieldset>";
-                        result += "</form>";
                     }
-                }
-
-                result += "</div>";
-                break;
-            default:
-                break;
+    
+                    result += "</div>";
+                    break;
+                default:
+                    break;
+            }
+            
+        }else{
+            result += "<span class='" + (message.isMine ? " float-right" : " float-left") + "'>";
+            result += "<span class='data'>Message deleted</span>";
+            result += "</span>";
         }
+        
 
         result += "</div>";
         result += "</div>";
