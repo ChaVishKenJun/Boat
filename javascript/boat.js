@@ -15,14 +15,15 @@ $(document).ready(function () {
         html: true,
         content: function () {
             var messageId = $(this).parent().parent().parent().attr('message-id');
+            var data = $(this).parent().children('span').children('span').html();
             var div = $('<div></div>');
-            div.append('<button type="button" class="btn btn-block" data-toggle="modal" data-target="#newPollModal">Edit</svg></button>');
+            div.append('<button type="button" class="btn btn-block" data-toggle="modal" data-target="#editMessageModal" id="editMessageButton" onclick="editMessage(' + messageId + ',\'' + data + '\')">Edit</svg></button>');
             div.append('<button type="button" class="btn btn-block">Pin</button>');
             div.append('<button type="button" class="btn btn-block" onclick="deleteMessage(' + messageId + ')">Delete</button>');
             return div;
         },
         container: 'body',
-        selector: '.message-button', // Sepcify the selector here
+        selector: '.message-button', // Sepcify the selector here 
         trigger: 'focus'
     });
         
@@ -451,6 +452,16 @@ function formatMessages(rawMessage) {
 
         result += "</div>";
         result += "</div>";
+
+
+        if(message.isDeleted = "0" && message.isEdited =="1" && message.isMine){
+            result += "<div class='row'>";
+            result += "<span class='float-right'>";
+            result += "<span class='data'>Message edited</span>";
+            result += "</span>";
+            result += "</div>";
+        }
+    
         result += "<div class='row mb-2'>"
         result += "<div class='col'>";
         result += "<span class='date badge text-muted font-weight-light" + (message.isMine ? " float-right" : "") + "'>" + message.date.split('.')[0] + "</span>";
@@ -563,4 +574,29 @@ function formatPollResult(pollResult) {
         result += "<div class='mb-2'></div>"
     }
     return result;
+}
+
+function editMessage(messageId, data)
+{
+    $("#editMessageForm #messageId").val(messageId);
+    $("#editMessageForm .modal-body #data").val(data);
+}
+
+function submitEditMessage(e) {
+    e.preventDefault();
+    $.ajax({
+        url: "?action=aEditMessage",
+        type: "post",
+        data: { data: JSON.stringify($(e.target).serializeArray()) }
+    })
+    .done(function (response, textStatus, jqXHR) {
+        loadMessages();
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        $($($(e.target).parent().parent()).find('.close')).click();
+    });
+    return false;
 }

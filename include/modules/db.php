@@ -194,6 +194,24 @@ class Database {
 		$this->db_connection->close();
 	}
 
+	function editMessage($messageId, $data) {
+		$this->open_db();
+		$sql = "
+			UPDATE message
+			INNER JOIN message_text ON (message.id = message_text.id)
+			SET message.is_edited = 1, message_text.data = '$data'
+			WHERE message.id = $messageId";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
+	function pinMessage($messageId) {
+		$this->open_db();
+		$sql = "UPDATE message SET is_pinned = 1 WHERE id = $messageId";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
 	function deleteMessage($messageId) {
 		$this->open_db();
 		$sql = "UPDATE message SET is_deleted = 1 WHERE id = $messageId";
