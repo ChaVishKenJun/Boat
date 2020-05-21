@@ -1,8 +1,23 @@
 var dataLoader; // Interval object for polling data
-var lastMessageId = 0;
+var timestamp;
 
 function toDateString(datetime) {
-    return datetime.getFullYear().toString() + '-' + (datetime.getMonth() + 1).toString() + '-' + datetime.getDate().toString() + ' ' + ("0" + datetime.getHours()).slice(-2) + ':' + ("0" + datetime.getMinutes()).slice(-2) + ':' + ("0" + datetime.getSeconds()).slice(-2) + '.' + datetime.getMilliseconds() + '000';
+    let string ='';
+    string += datetime.getFullYear().toString();
+    string += '-';
+    string += ("0" + (datetime.getMonth() + 1)).slice(-2).toString();
+    string += '-';
+    string += ("0" + datetime.getDate()).slice(-2).toString();
+    string += ' ';
+    string += ("0" + datetime.getHours()).slice(-2).toString();
+    string += ':';
+    string += ("0" + datetime.getMinutes()).slice(-2);
+    string += ':';
+    string += ("0" + datetime.getSeconds()).slice(-2);
+    string += '.';
+    string += datetime.getMilliseconds();
+    string += '000';
+    return string;
 }
 
 function scrollDown() {
@@ -286,20 +301,22 @@ function formatNotificationBell(hasNotifications) {
 function loadData() {
     /// <summary>Load data when page is newly open.</summary>
     loadMessages();
+    timestamp = new Date();
 }
 
 function pollData() {
     /// <summary>Check for newly created data and update the content.</summary>
-    loadMessages(lastMessageId);
+    loadMessages(timestamp);
+    timestamp = new Date();
 }
 
-function loadMessages(after) {    
+function loadMessages(laterThan = null) {    
     $.ajax({
-        url: "?action=aLoadMessages" + (after != null ? "&after=" + lastMessageId : ''),
+        url: "?action=aLoadMessages" + (laterThan != null ? "&laterThan=" + toDateString(laterThan) : ''),
         type: "get"
     })
     .done(function (response, textStatus, jqXHR) {
-        if (after == null) {
+        if (laterThan == null) {
             if (response != '') {
                 $('#messages').html(formatMessages(response));                
                 scrollDown();
@@ -467,8 +484,6 @@ function formatMessages(rawMessage) {
         result += "</div>";
         result += "</div>";
         result += "</div>";
-
-        lastMessageId = message.messageId;
     });
     
     return result;

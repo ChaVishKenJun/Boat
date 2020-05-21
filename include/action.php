@@ -79,7 +79,7 @@ class Action {
                 $this->sendMessage($_GET["message"]);
             break;
             case "aLoadMessages":
-                $this->loadMessages($_GET["after"]);
+                $this->loadMessages($_GET["laterThan"]);
             break;
             case "aUpdateNotificationsToRead":
                 $this->updateNotificationsToRead();
@@ -808,7 +808,7 @@ class Action {
         }
     }
 
-    function loadMessages($after) {
+    function loadMessages($laterThan) {
         $response = '';
 
         global $session;
@@ -822,8 +822,8 @@ class Action {
         if (isset($groupId) && isset($userId)) {
             $resultArray = [];
             
-            if ($after != '') {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.id > $after ORDER BY message.date LIMIT 50");
+            if ($laterThan != '') {
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.date > '$laterThan' ORDER BY message.date LIMIT 50");
             } else {
                 $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.is_deleted, message.is_edited, message.is_pinned FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.date LIMIT 50");
             }
