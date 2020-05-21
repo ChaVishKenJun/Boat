@@ -196,10 +196,11 @@ class Database {
 
 	function editMessage($messageId, $data) {
 		$this->open_db();
+		$date = $this->getCurrentDateTime();
 		$sql = "
 			UPDATE message
 			INNER JOIN message_text ON (message.id = message_text.id)
-			SET message.is_edited = 1, message_text.data = '$data'
+			SET message.edited_date = '$date', message_text.data = '$data'
 			WHERE message.id = $messageId";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
@@ -207,14 +208,16 @@ class Database {
 
 	function pinMessage($messageId) {
 		$this->open_db();
-		$sql = "UPDATE message SET is_pinned = 1 WHERE id = $messageId";
+		$date = $this->getCurrentDateTime();
+		$sql = "UPDATE message SET pinned_date = '$date' WHERE id = $messageId";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
 	}
 
 	function deleteMessage($messageId) {
 		$this->open_db();
-		$sql = "UPDATE message SET is_deleted = 1 WHERE id = $messageId";
+		$date = $this->getCurrentDateTime();
+		$sql = "UPDATE message SET deleted_date = '$date' WHERE id = $messageId";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
 	}

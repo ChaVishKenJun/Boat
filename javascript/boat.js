@@ -338,7 +338,7 @@ function formatMessages(rawMessage) {
             result += "</div>";
         }                   
 
-        if(message.isDeleted == "0")
+        if(message.deletedDate == null)
         {
 
             result += "<div class='row'>";
@@ -452,10 +452,10 @@ function formatMessages(rawMessage) {
         result += "</div>";
 
 
-        if(message.isDeleted = "0" && message.isEdited =="1" && message.isMine){
+        if(message.deletedDate == null && message.editedDate !=null){
             result += "<div class='row'>";
             result += "<span class='float-right'>";
-            result += "<span class='data'>Message edited</span>";
+            result += "<span class='data float-right'>Message edited</span>";
             result += "</span>";
             result += "</div>";
         }
