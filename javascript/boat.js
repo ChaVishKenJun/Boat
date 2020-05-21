@@ -362,13 +362,13 @@ function formatMessages(rawMessage) {
                 case "video":
                     break;
                 case "poll":
-                    const endButtonHtml = "<button class='btn btn-primary btn-sm btn-block mt-2 mb-1' onclick='return endPoll(this);'>End</button>";
+                    const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(this);'>End</a>";
     
-                    result += "<div class='.container-sm bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+                    result += "<div class='poll bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
     
                     if (message.data.ended == '1') {
                         result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
-                        
+                        result += formatPollResult(message.data.result);
                     } else {
                         if (message.data.voted == '1') {
                             result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
@@ -484,7 +484,6 @@ function submitNewPoll(e) {
         data: { data: JSON.stringify($(e.target).serializeArray()) }
     })
     .done(function (response, textStatus, jqXHR) {
-        alert(response);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
@@ -518,7 +517,7 @@ function endPoll(sender) {
     $.ajax({
         url: "?action=aEndPoll",
         type: "post",
-        data: { messageId: $(sender).parent().parent().parent().parent().attr('message-id') }
+        data: { messageId: $(sender).parent().parent().parent().parent().parent().parent().attr('message-id') }
     })
     .done(function (response, textStatus, jqXHR) {
         if (response == "true") {    
@@ -530,7 +529,7 @@ function endPoll(sender) {
                 $.ajax({
                     url: "?action=aEndPoll",
                     type: "post",
-                    data: { messageId: $(sender).parent().parent().parent().parent().attr('message-id'), force: "true" }
+                    data: { messageId: $(sender).parent().parent().parent().parent().parent().parent().attr('message-id') , force: "true" }
                 })
                 .done(function (forceResponse, forceTextStatus, forceJqXHR) {
                     if (forceResponse == "true") {    
@@ -544,4 +543,24 @@ function endPoll(sender) {
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
     })
+}
+
+function formatPollResult(pollResult) {
+    let result = '';
+    const max = Math.max.apply(Math, pollResult.map(function (item) { return item.count; }));
+    if (max == 0) {
+        result = "<div class='text-center mb-2'>No result to show</div>";
+    } else {
+        pollResult.sort((a,b) => (a.count > b.count) ? 1 : ((b.count > a.count) ? -1 : 0)); 
+
+        pollResult.forEach(item => {
+            let portion = item.count * 100 / max;
+            result += '<div class="progress mb-2">';
+            result += '<div class="progress-bar" role="progressbar" style="width: ' + portion + '%;" aria-valuenow="' + portion + '" aria-valuemin="0" aria-valuemax="100">' + item.name + ' (' + item.count + ')' + '</div>';
+            result += '</div>';
+        });
+
+        result += "<div class='mb-2'></div>"
+    }
+    return result;
 }

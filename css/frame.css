@@ -194,3 +194,7 @@ body {
 	outline: 0;
 	display: block !important;
 }
+
+.poll {
+	min-width: 20%;
+}

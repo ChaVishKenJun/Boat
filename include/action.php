@@ -864,15 +864,16 @@ class Action {
 
                         $voted = $db->single_dynamic_query("SELECT * FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id WHERE user_id = '$userId' AND message_poll_id = '$messageId'") != "false";
 
+                        // TODO: This can be combined with optionArray
                         $result = [];
                         if ($pollMessage[0][0][3] == '1') {
                             if ($options != "false") {
                                 foreach ($options[0] as $option) {
                                     $votes = $db->single_dynamic_query("SELECT * FROM vote WHERE poll_option_id = '$option[0]'");
                                     if ($votes != "false") {
-                                        array_push($result, array('id' => $option[0], 'count' => count($votes[0])));
+                                        array_push($result, array('id' => $option[0], 'name' => $option[1], 'count' => count($votes[0])));
                                     } else {
-                                        array_push($result, array('id' => $option[0], 'count' => 0));
+                                        array_push($result, array('id' => $option[0], 'name' => $option[1], 'count' => 0));
                                     }
                                 }
                             }
@@ -1036,17 +1037,21 @@ class Action {
                 $allUsersInPoll = $db->single_dynamic_query("SELECT user_group.user_id FROM message INNER JOIN user_group ON message.groupchat_id = user_group.group_id WHERE message.id = '$messageId'");
                 $participants = $db->single_dynamic_query("SELECT vote.user_id FROM vote INNER JOIN poll_option ON vote.poll_option_id = poll_option.id INNER JOIN message ON poll_option.message_poll_id = message.id WHERE message.id = '$messageId'");
 
-                if (count($allUsersInPoll[0]) == count($participants[0])) {
-                    // End poll
-                    $db->endPoll($messageId);
-                    $response = "true";
+                if ($participants == "false" && $force != "true") {
+                    $response = "false";
                 } else {
-                    // End poll after asking user once again. 
-                    if ($force == "true") {
+                    if ($participants == "false" || count($allUsersInPoll[0]) == count($participants[0])) {
+                        // End poll
                         $db->endPoll($messageId);
                         $response = "true";
                     } else {
-                        $response = "false";
+                        // End poll after asking user once again. 
+                        if ($force == "true") {
+                            $db->endPoll($messageId);
+                            $response = "true";
+                        } else {
+                            $response = "false";
+                        }
                     }
                 }
             } else {
