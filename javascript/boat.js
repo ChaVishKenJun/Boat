@@ -699,7 +699,11 @@ function sendImage(e) {
         data: form,
     })
     .done(function (response, textStatus, jqXHR) {
-        alert(response);
+        if (response == 'true') {
+
+        } else {
+            
+        }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
@@ -729,8 +733,9 @@ function sendVideo(e) {
 }
 
 function loadImages() {
-    $('.image').each(function (image) {
-        const id = $(this).parent().parent().parent().attr('message-id');
+    $('.image').each(function () {
+        const container = $(this);
+        const id = container.parent().parent().parent().attr('message-id');
         
         $.ajax({
             url:'?action=aLoadImage',
@@ -741,9 +746,7 @@ function loadImages() {
             },*/
         })
         .done(function (response, textStatus, errorThrown) {
-            var image = new Image();
-            image.src = response;
-            $(this).append(image);
+            container.append('<img src="' + response + '"/>');
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
             console.log("Error" + textStatus + errorThrown);

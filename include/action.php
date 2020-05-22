@@ -819,12 +819,12 @@ class Action {
                         $data = $textMessage[0][0][0];
                     }
                     
-                    $imageMessage = $db->single_dynamic_query("SELECT data FROM message_image WHERE id = '$messageId'");
+                    $imageMessage = $db->single_dynamic_query("SELECT id FROM message_image WHERE id = '$messageId'");
                     if ($imageMessage != "false") {
                         $type = "image";
                     }
                     
-                    $videoMessage = $db->single_dynamic_query("SELECT data FROM message_video WHERE id = '$messageId'");
+                    $videoMessage = $db->single_dynamic_query("SELECT id FROM message_video WHERE id = '$messageId'");
                     if ($videoMessage != "false") {
                         $type = "video";
                     }
@@ -1123,24 +1123,28 @@ class Action {
     function sendImage($file) {
         global $db;
         global $session;
-
+        
         $response = "false";
         
         $userId = $session->getData("UserId");
         $groupId = $session->getData("GroupId");
 
-        try {
-            if ($file["error"] == 0 && isset($groupId) && isset($userId)) {
-                $messageId = $db->sendImage($groupId, $userId, file_get_contents($file["tmp_name"]));
+        $path = PATH_UPLOAD . basename($file["name"]);
 
-                if ($messageId > 0) {
-                    $response = "true";
-                }
+        $isImage = getimagesize($file["tmp_name"]);
+
+        // TODO: Make every image file unique (e.g. with message Id)
+
+        if ($isImage) {
+            $messageId = $db->sendImage($groupId, $userId, $path);
+
+            if (move_uploaded_file($file["tmp_name"], $path)) {
+                $response = "true";
+            } else {
+                // TODO: Delete message
             }
-        } catch (Exception $e) {
-            // TODO: Handle and log exception
         }
-        
+
         echo $response;
         exit;
     }
@@ -1148,11 +1152,12 @@ class Action {
     function loadImage($messageId) {
         global $db;
         $response = "false";
-        $imageMessage = $db->single_dynamic_query("SELECT data FROM message_image WHERE id = '$messageId'");
+        $imageMessage = $db->single_dynamic_query("SELECT path FROM message_image WHERE id = '$messageId'");
         if ($imageMessage != "false") {
             $response = $imageMessage[0][0][0];
         }
-        return $response;
+        echo $response;
+        exit;
     }
 }
 

@@ -294,17 +294,15 @@ class Database {
 		return $type;
 	}
 
-	function sendImage($groupId, $userId, $contents) {
+	function sendImage($groupId, $userId, $path) {
 		$date = $this->getCurrentDateTime();
-		
+
 		$this->open_db();
 		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
 		$this->db_connection->query($sql);
 		$messageId = $this->db_connection->insert_id;
 
-		$contents = $this->db_connection->real_escape_string($contents);
-
-		$sql = "INSERT INTO message_image (id, data) VALUES ('$messageId', '$contents')";
+		$sql = "INSERT INTO message_image (id, path) VALUES ('$messageId', '$path')";
 		$this->db_connection->query($sql);
 
 		$this->db_connection->close();
