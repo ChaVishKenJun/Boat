@@ -178,7 +178,8 @@ class Database {
 		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
 		$this->db_connection->query($sql);
 		$messageId = $this->db_connection->insert_id;
-		
+
+		$message = $this->db_connection->real_escape_string($message);
 		$sql = "INSERT INTO message_text (id, data) VALUES ('$messageId', '$message')";
 		$this->db_connection->query($sql);
 
