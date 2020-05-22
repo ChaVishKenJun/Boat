@@ -169,11 +169,8 @@ class Database {
 	}
 
 	function sendMessage($groupId, $userId, $message) {
-		$t = microtime(true);
-		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
-		$d = new DateTime(date('Y-m-d H:i:s.'.$micro, $t));
-		$date = $d->format("Y-m-d H:i:s.u");
-
+		$date = $this->getCurrentDateTime();
+		
 		$this->open_db();
 		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
 		$this->db_connection->query($sql);
@@ -286,6 +283,24 @@ class Database {
 			$type = "poll";
 		}
 		return $type;
+	}
+
+	function sendImage($groupId, $userId, $contents) {
+		$date = $this->getCurrentDateTime();
+		
+		$this->open_db();
+		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
+		$this->db_connection->query($sql);
+		$messageId = $this->db_connection->insert_id;
+
+		$contents = $this->db_connection->real_escape_string($contents);
+
+		$sql = "INSERT INTO message_image (id, data) VALUES ('$messageId', '$contents')";
+		$this->db_connection->query($sql);
+
+		$this->db_connection->close();
+
+		return $messageId;
 	}
 }
 

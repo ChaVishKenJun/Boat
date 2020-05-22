@@ -13,6 +13,61 @@
     </div>
 </div>
 
+<!-- Upload Media Modal -->
+<div class="modal fade" id="uploadImageModal" tabindex="-1" role="dialog" aria-labelledby="uploadImageModalTitle" area-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadImageModalTitle">Upload Image</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="uploadImageForm" onsubmit="return sendImage(event);">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <div class="custom-file">
+                            <input name="image" type="file" accept="image/*" class="custom-file-input" id="inputUploadImage" aria-describedby="inputUploadImageAddon">
+                            <label class="custom-file-label" for="inputUploadImage">Choose file</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" type="submit" id="inputUploadImageAddon">Send</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Discard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadVideoModal" tabindex="-1" role="dialog" aria-labelledby="uploadVideoModalTitle" area-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadVideoModalTitle">Upload Video</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="uploadVideoForm" onsubmit="return sendVideo(event);">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <div class="custom-file">
+                            <input name="video" type="file" accept="video/*" class="custom-file-input" id="inputUploadVideo" aria-describedby="inputUploadVideoAddon">
+                            <label class="custom-file-label" for="inputUploadVideo">Choose file</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" type="submit" id="inputUploadVideoAddon">Send</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Discard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- New Poll Modal -->
 <div class="modal fade" id="newPollModal" tabindex="-1" role="dialog" aria-labelledby="newPollModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
