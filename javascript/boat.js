@@ -339,6 +339,7 @@ function loadMessages(after = 0) {
                 $('#messages').html(formatMessages(response));                
                 scrollDown();
                 loadImages();
+                loadVideos();
             } else {
                 $('#messages').html('This chat is still new.');
             }
@@ -347,6 +348,7 @@ function loadMessages(after = 0) {
                 $('#messages').append(formatMessages(response));
                 scrollDown();
                 loadImages();
+                loadVideos();
             }
         }
     })
@@ -405,6 +407,7 @@ function formatMessages(rawMessage) {
                     result += "<div class='image bg-light px-3 py-1 m-1 rounded'></div>";
                     break;
                 case "video":
+                    result += "<div class='video bg-light px-3 py-1 m-1 rounded'></div>";
                     break;
                 case "poll":
                     const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(" + message.messageId + ");'>End</a>";
@@ -718,12 +721,27 @@ function sendImage(e) {
 
 function sendVideo(e) {
     e.preventDefault();
+
+    const file = $(e.target).find('input[type="file"]').prop('files')[0];
+    const form = new FormData();
+    form.append('file', file);
+    
     $.ajax({
         url: "?action=aSendVideo",
-        type: "post",
-        data: { data: JSON.stringify($(e.target).serializeArray()) }
+        dataType: 'text',
+        cache: false,
+        contentType: false,
+        processData: false,                         
+        type: 'post',
+        data: form,
     })
     .done(function (response, textStatus, jqXHR) {
+        alert(response);
+        if (response == 'true') {
+
+        } else {
+            
+        }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
@@ -743,13 +761,33 @@ function loadImages() {
             $.ajax({
                 url:'?action=aLoadImage',
                 cache:false,
-                data: { messageId: id}
-                /*xhrFields: {
-                    responseType: 'blob'
-                },*/
+                data: { messageId: id }
             })
             .done(function (response, textStatus, errorThrown) {
                 container.append('<img src="' + response + '"/>');
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                console.log("Error" + textStatus + errorThrown);
+            })
+            .always(function () {
+            });
+        }
+    });
+}
+
+function loadVideos() {
+    $('.video').each(function () {
+        if ($(this).find('video').length == 0) {
+            const container = $(this);
+            const id = container.parent().parent().parent().attr('message-id');
+            
+            $.ajax({
+                url:'?action=aLoadVideo',
+                cache:false,
+                data: { messageId: id }
+            })
+            .done(function (response, textStatus, errorThrown) {
+                container.append('<video src="' + response + '" controls></video>');
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
                 console.log("Error" + textStatus + errorThrown);

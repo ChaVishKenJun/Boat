@@ -311,6 +311,24 @@ class Database {
 
 		return $messageId;
 	}
+
+	function sendVideo($groupId, $userId, $folder, $file) {
+		$date = $this->getCurrentDateTime();
+
+		$this->open_db();
+		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
+		$this->db_connection->query($sql);
+		$messageId = $this->db_connection->insert_id;
+
+		$path = $folder . $messageId . '.' . $file;
+		
+		$sql = "INSERT INTO message_video (id, path) VALUES ('$messageId', '$path')";
+		$this->db_connection->query($sql);
+
+		$this->db_connection->close();
+
+		return $messageId;
+	}
 }
 
 $db = new Database;

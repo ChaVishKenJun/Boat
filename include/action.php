@@ -80,6 +80,12 @@ class Action {
             case "aLoadImage":
                 $this->loadImage($_GET["messageId"]);
             break;
+            case "aSendVideo":
+                $this->sendVideo($_FILES['file']);
+            break;
+            case "aLoadVideo":
+                $this->loadVideo($_GET["messageId"]);
+            break;
         }
     }
     
@@ -1154,6 +1160,48 @@ class Action {
         global $db;
         $response = "false";
         $imageMessage = $db->single_dynamic_query("SELECT path FROM message_image WHERE id = '$messageId'");
+        if ($imageMessage != "false") {
+            $response = $imageMessage[0][0][0];
+        }
+        echo $response;
+        exit;
+    }
+
+    function sendVideo($file) {
+        global $db;
+        global $session;
+        
+        $response = "false";
+        
+        $userId = $session->getData("UserId");
+        $groupId = $session->getData("GroupId");
+
+        $folderName = PATH_UPLOAD;
+        $fileName = basename($file["name"]);
+
+        $mime = mime_content_type($file["tmp_name"]);
+        $isVideo = strstr($mime, "video/");
+
+        // TODO: Make every image file unique (e.g. with message Id)
+
+        if ($isVideo) {
+            $messageId = $db->sendVideo($groupId, $userId, $folderName, $fileName);
+
+            if (move_uploaded_file($file["tmp_name"], $folderName . $messageId . '.' . $fileName)) {
+                $response = "true";
+            } else {
+                // TODO: Delete message
+            }
+        }
+
+        echo $response;
+        exit;
+    }
+
+    function loadVideo($messageId) {
+        global $db;
+        $response = "false";
+        $imageMessage = $db->single_dynamic_query("SELECT path FROM message_video WHERE id = '$messageId'");
         if ($imageMessage != "false") {
             $response = $imageMessage[0][0][0];
         }
