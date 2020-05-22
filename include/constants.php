@@ -7,6 +7,7 @@ define("DB_NAME", "DB2");
 
 define("PATH_INC", "include/");
 define("PATH_MOD", "include/modules/");
+define("PATH_UPLOAD", "uploads/");
 
 define("PATH_GROUP", "content/group/");
 

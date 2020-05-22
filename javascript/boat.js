@@ -50,8 +50,8 @@ $(document).ready(function () {
             html: true,
             content: function () {
                 var div = $('<div></div>');
-                div.append('<button type="button" class="btn btn-outline-dark m-1"><svg class="bi bi-camera-video" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.667 3.5c-.645 0-1.167.522-1.167 1.167v6.666c0 .645.522 1.167 1.167 1.167h6.666c.645 0 1.167-.522 1.167-1.167V4.667c0-.645-.522-1.167-1.167-1.167H2.667zM.5 4.667C.5 3.47 1.47 2.5 2.667 2.5h6.666c1.197 0 2.167.97 2.167 2.167v6.666c0 1.197-.97 2.167-2.167 2.167H2.667A2.167 2.167 0 01.5 11.333V4.667z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M11.25 5.65l2.768-1.605a.318.318 0 01.482.263v7.384c0 .228-.26.393-.482.264l-2.767-1.605-.502.865 2.767 1.605c.859.498 1.984-.095 1.984-1.129V4.308c0-1.033-1.125-1.626-1.984-1.128L10.75 4.785l.502.865z" clip-rule="evenodd"/></svg></button>');
-                div.append('<button type="button" class="btn btn-outline-dark m-1"><svg class="bi bi-card-image" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 00-.5.5v9a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5zm-13-1A1.5 1.5 0 000 3.5v9A1.5 1.5 0 001.5 14h13a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0014.5 2h-13z" clip-rule="evenodd"/><path d="M10.648 7.646a.5.5 0 01.577-.093L15.002 9.5V13h-14v-1l2.646-2.354a.5.5 0 01.63-.062l2.66 1.773 3.71-3.71z"/><path fill-rule="evenodd" d="M4.502 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg></button>');
+                div.append('<button type="button" class="btn btn-outline-dark m-1" data-toggle="modal" data-target="#uploadVideoModal"><svg class="bi bi-camera-video" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2.667 3.5c-.645 0-1.167.522-1.167 1.167v6.666c0 .645.522 1.167 1.167 1.167h6.666c.645 0 1.167-.522 1.167-1.167V4.667c0-.645-.522-1.167-1.167-1.167H2.667zM.5 4.667C.5 3.47 1.47 2.5 2.667 2.5h6.666c1.197 0 2.167.97 2.167 2.167v6.666c0 1.197-.97 2.167-2.167 2.167H2.667A2.167 2.167 0 01.5 11.333V4.667z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M11.25 5.65l2.768-1.605a.318.318 0 01.482.263v7.384c0 .228-.26.393-.482.264l-2.767-1.605-.502.865 2.767 1.605c.859.498 1.984-.095 1.984-1.129V4.308c0-1.033-1.125-1.626-1.984-1.128L10.75 4.785l.502.865z" clip-rule="evenodd"/></svg></button>');
+                div.append('<button type="button" class="btn btn-outline-dark m-1" data-toggle="modal" data-target="#uploadImageModal"><svg class="bi bi-card-image" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M14.5 3h-13a.5.5 0 00-.5.5v9a.5.5 0 00.5.5h13a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5zm-13-1A1.5 1.5 0 000 3.5v9A1.5 1.5 0 001.5 14h13a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0014.5 2h-13z" clip-rule="evenodd"/><path d="M10.648 7.646a.5.5 0 01.577-.093L15.002 9.5V13h-14v-1l2.646-2.354a.5.5 0 01.63-.062l2.66 1.773 3.71-3.71z"/><path fill-rule="evenodd" d="M4.502 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg></button>');
                 div.append('<button type="button" class="btn btn-outline-dark m-1" data-toggle="modal" data-target="#newPollModal"><svg class="bi bi-list-check" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 11.5a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zM3.854 2.146a.5.5 0 010 .708l-1.5 1.5a.5.5 0 01-.708 0l-.5-.5a.5.5 0 11.708-.708L2 3.293l1.146-1.147a.5.5 0 01.708 0zm0 4a.5.5 0 010 .708l-1.5 1.5a.5.5 0 01-.708 0l-.5-.5a.5.5 0 11.708-.708L2 7.293l1.146-1.147a.5.5 0 01.708 0zm0 4a.5.5 0 010 .708l-1.5 1.5a.5.5 0 01-.708 0l-.5-.5a.5.5 0 01.708-.708l.146.147 1.146-1.147a.5.5 0 01.708 0z" clip-rule="evenodd"/></svg></button>');
                 return div;
             },
@@ -116,6 +116,8 @@ $(document).ready(function () {
     };    
     xmlhttp.open("GET", "?action=aLoadNotifications", true);
     xmlhttp.send();
+
+    $('input[type="file"]').on('change', updateLabel);
 });
 
 /* ----------------------------------------------------- GROUP ----------------------------------------------------- */
@@ -220,7 +222,7 @@ function pinMessage(messageId)
         type: "post",
         data: { messageId : messageId }
     })
-    .done(function (response, textStatus, jqXHR) {d
+    .done(function (response, textStatus, jqXHR) {
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
@@ -336,6 +338,8 @@ function loadMessages(after = 0) {
             if (response != '') {
                 $('#messages').html(formatMessages(response));                
                 scrollDown();
+                loadImages();
+                loadVideos();
             } else {
                 $('#messages').html('This chat is still new.');
             }
@@ -343,6 +347,8 @@ function loadMessages(after = 0) {
             if (response != '') {
                 $('#messages').append(formatMessages(response));
                 scrollDown();
+                loadImages();
+                loadVideos();
             }
         }
     })
@@ -398,8 +404,10 @@ function formatMessages(rawMessage) {
                     result += "</span>";
                     break;
                 case "image":
+                    result += "<div class='image bg-light px-3 py-1 m-1 rounded'></div>";
                     break;
                 case "video":
+                    result += "<div class='video bg-light px-3 py-1 m-1 rounded'></div>";
                     break;
                 case "poll":
                     const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(" + message.messageId + ");'>End</a>";
@@ -722,3 +730,123 @@ $('#messageInput').on('keyup keydown paste', function () {
     }
       
 });
+/* ----------------------------------------------------- Media ----------------------------------------------------- */
+function updateLabel() {
+    let value = $(this).val();
+    value = value.substr(value.lastIndexOf('\\') + 1);
+    if (value !== '') {
+        $('label[for="' + $(this).attr("id") + '"]').text(value);
+    }
+}
+
+function sendImage(e) {
+    e.preventDefault();
+
+    const file = $(e.target).find('input[type="file"]').prop('files')[0];
+    const form = new FormData();
+    form.append('file', file);
+
+    $.ajax({
+        url: "?action=aSendImage",
+        dataType: 'text',
+        cache: false,
+        contentType: false,
+        processData: false,                         
+        type: 'post',
+        data: form,
+    })
+    .done(function (response, textStatus, jqXHR) {
+        alert(response);
+        if (response == 'true') {
+
+        } else {
+            
+        }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        $($($(e.target).parent().parent()).find('.close')).click();
+    });
+    return false;
+}
+
+function sendVideo(e) {
+    e.preventDefault();
+
+    const file = $(e.target).find('input[type="file"]').prop('files')[0];
+    const form = new FormData();
+    form.append('file', file);
+    
+    $.ajax({
+        url: "?action=aSendVideo",
+        dataType: 'text',
+        cache: false,
+        contentType: false,
+        processData: false,                         
+        type: 'post',
+        data: form,
+    })
+    .done(function (response, textStatus, jqXHR) {
+        alert(response);
+        if (response == 'true') {
+
+        } else {
+            
+        }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        $($($(e.target).parent().parent()).find('.close')).click();
+    });
+    return false;
+}
+
+function loadImages() {
+    $('.image').each(function () {
+        if ($(this).find('img').length == 0) {
+            const container = $(this);
+            const id = container.parent().parent().parent().attr('message-id');
+            
+            $.ajax({
+                url:'?action=aLoadImage',
+                cache:false,
+                data: { messageId: id }
+            })
+            .done(function (response, textStatus, errorThrown) {
+                container.append('<img src="' + response + '"/>');
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                console.log("Error" + textStatus + errorThrown);
+            })
+            .always(function () {
+            });
+        }
+    });
+}
+
+function loadVideos() {
+    $('.video').each(function () {
+        if ($(this).find('video').length == 0) {
+            const container = $(this);
+            const id = container.parent().parent().parent().attr('message-id');
+            
+            $.ajax({
+                url:'?action=aLoadVideo',
+                cache:false,
+                data: { messageId: id }
+            })
+            .done(function (response, textStatus, errorThrown) {
+                container.append('<video src="' + response + '" controls></video>');
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                console.log("Error" + textStatus + errorThrown);
+            })
+            .always(function () {
+            });
+        }
+    });
+}

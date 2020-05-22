@@ -74,6 +74,18 @@ class Action {
             case "aPinMessage":
                 $this->pinMessage($_POST["messageId"]);
             break;
+            case "aSendImage":
+                $this->sendImage($_FILES['file']);
+            break;
+            case "aLoadImage":
+                $this->loadImage($_GET["messageId"]);
+            break;
+            case "aSendVideo":
+                $this->sendVideo($_FILES['file']);
+            break;
+            case "aLoadVideo":
+                $this->loadVideo($_GET["messageId"]);
+            break;
         }
     }
     
@@ -794,9 +806,9 @@ class Action {
             $this->updateMessagesToRead($userId, $groupId);
             
             if ($after != '') {                
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date, message.read_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.id > $after ORDER BY message.id LIMIT 50");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date, message.read_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.id > $after ORDER BY message.id");
             } else {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date, message.read_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.id LIMIT 50");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date, message.read_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.id");
             }
 
             if ($messages != "false") {
@@ -813,16 +825,14 @@ class Action {
                         $data = $textMessage[0][0][0];
                     }
                     
-                    $imageMessage = $db->single_dynamic_query("SELECT data FROM message_image WHERE id = '$messageId'");
+                    $imageMessage = $db->single_dynamic_query("SELECT id FROM message_image WHERE id = '$messageId'");
                     if ($imageMessage != "false") {
                         $type = "image";
-                        $data = $imageMessage[0][0][0];
                     }
                     
-                    $videoMessage = $db->single_dynamic_query("SELECT data FROM message_video WHERE id = '$messageId'");
+                    $videoMessage = $db->single_dynamic_query("SELECT id FROM message_video WHERE id = '$messageId'");
                     if ($videoMessage != "false") {
-                        $type = "image";
-                        $data = $videoMessage[0][0][0];
+                        $type = "video";
                     }
 
                     $pollMessage = $db->single_dynamic_query("SELECT title, due, multi_select, ended_date FROM message_poll WHERE id = '$messageId'");
@@ -864,7 +874,6 @@ class Action {
 
                     array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data, 'deletedDate' => $message[5], 'editedDate' => $message[6], 'pinnedDate' => $message[7], 'readDate' => $message[8]));
                 }
-                
                 $response = json_encode($resultArray);
             }
         }
@@ -1114,6 +1123,89 @@ class Action {
         } catch (Exception $e) {
             echo "false";
         }
+        exit;
+    }
+
+    function sendImage($file) {
+        global $db;
+        global $session;
+        
+        $response = "false";
+        
+        $userId = $session->getData("UserId");
+        $groupId = $session->getData("GroupId");
+
+        $folderName = PATH_UPLOAD;
+        $fileName = basename($file["name"]);
+
+        $isImage = getimagesize($file["tmp_name"]);
+
+        // TODO: Make every image file unique (e.g. with message Id)
+
+        if ($isImage) {
+            $messageId = $db->sendImage($groupId, $userId, $folderName, $fileName);
+
+            if (move_uploaded_file($file["tmp_name"], $folderName . $messageId . '.' . $fileName)) {
+                $response = "true";
+            } else {
+                // TODO: Delete message
+            }
+        }
+
+        echo $response;
+        exit;
+    }
+
+    function loadImage($messageId) {
+        global $db;
+        $response = "false";
+        $imageMessage = $db->single_dynamic_query("SELECT path FROM message_image WHERE id = '$messageId'");
+        if ($imageMessage != "false") {
+            $response = $imageMessage[0][0][0];
+        }
+        echo $response;
+        exit;
+    }
+
+    function sendVideo($file) {
+        global $db;
+        global $session;
+        
+        $response = "false";
+        
+        $userId = $session->getData("UserId");
+        $groupId = $session->getData("GroupId");
+
+        $folderName = PATH_UPLOAD;
+        $fileName = basename($file["name"]);
+
+        $mime = mime_content_type($file["tmp_name"]);
+        $isVideo = strstr($mime, "video/");
+
+        // TODO: Make every image file unique (e.g. with message Id)
+
+        if ($isVideo) {
+            $messageId = $db->sendVideo($groupId, $userId, $folderName, $fileName);
+
+            if (move_uploaded_file($file["tmp_name"], $folderName . $messageId . '.' . $fileName)) {
+                $response = "true";
+            } else {
+                // TODO: Delete message
+            }
+        }
+
+        echo $response;
+        exit;
+    }
+
+    function loadVideo($messageId) {
+        global $db;
+        $response = "false";
+        $imageMessage = $db->single_dynamic_query("SELECT path FROM message_video WHERE id = '$messageId'");
+        if ($imageMessage != "false") {
+            $response = $imageMessage[0][0][0];
+        }
+        echo $response;
         exit;
     }
 }
