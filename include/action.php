@@ -1129,16 +1129,17 @@ class Action {
         $userId = $session->getData("UserId");
         $groupId = $session->getData("GroupId");
 
-        $path = PATH_UPLOAD . basename($file["name"]);
+        $folderName = PATH_UPLOAD;
+        $fileName = basename($file["name"]);
 
         $isImage = getimagesize($file["tmp_name"]);
 
         // TODO: Make every image file unique (e.g. with message Id)
 
         if ($isImage) {
-            $messageId = $db->sendImage($groupId, $userId, $path);
+            $messageId = $db->sendImage($groupId, $userId, $folderName, $fileName);
 
-            if (move_uploaded_file($file["tmp_name"], $path)) {
+            if (move_uploaded_file($file["tmp_name"], $folderName . $messageId . '.' . $fileName)) {
                 $response = "true";
             } else {
                 // TODO: Delete message

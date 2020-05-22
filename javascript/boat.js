@@ -337,7 +337,7 @@ function loadMessages(after = 0) {
         if (after == 0) {
             if (response != '') {
                 $('#messages').html(formatMessages(response));                
-                scrollDown();                
+                scrollDown();
                 loadImages();
             } else {
                 $('#messages').html('This chat is still new.');
@@ -346,6 +346,7 @@ function loadMessages(after = 0) {
             if (response != '') {
                 $('#messages').append(formatMessages(response));
                 scrollDown();
+                loadImages();
             }
         }
     })
@@ -401,7 +402,7 @@ function formatMessages(rawMessage) {
                     result += "</span>";
                     break;
                 case "image":
-                    result += "<div class='image bg-light px-3 py-1 m-1 rounded'><image id='image'></div>";
+                    result += "<div class='image bg-light px-3 py-1 m-1 rounded'></div>";
                     break;
                 case "video":
                     break;
@@ -699,6 +700,7 @@ function sendImage(e) {
         data: form,
     })
     .done(function (response, textStatus, jqXHR) {
+        alert(response);
         if (response == 'true') {
 
         } else {
@@ -734,24 +736,26 @@ function sendVideo(e) {
 
 function loadImages() {
     $('.image').each(function () {
-        const container = $(this);
-        const id = container.parent().parent().parent().attr('message-id');
-        
-        $.ajax({
-            url:'?action=aLoadImage',
-            cache:false,
-            data: { messageId: id}
-            /*xhrFields: {
-                responseType: 'blob'
-            },*/
-        })
-        .done(function (response, textStatus, errorThrown) {
-            container.append('<img src="' + response + '"/>');
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            console.log("Error" + textStatus + errorThrown);
-        })
-        .always(function () {
-        });
+        if ($(this).find('img').length == 0) {
+            const container = $(this);
+            const id = container.parent().parent().parent().attr('message-id');
+            
+            $.ajax({
+                url:'?action=aLoadImage',
+                cache:false,
+                data: { messageId: id}
+                /*xhrFields: {
+                    responseType: 'blob'
+                },*/
+            })
+            .done(function (response, textStatus, errorThrown) {
+                container.append('<img src="' + response + '"/>');
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                console.log("Error" + textStatus + errorThrown);
+            })
+            .always(function () {
+            });
+        }
     });
 }

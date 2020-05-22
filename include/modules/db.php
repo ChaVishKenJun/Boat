@@ -294,7 +294,7 @@ class Database {
 		return $type;
 	}
 
-	function sendImage($groupId, $userId, $path) {
+	function sendImage($groupId, $userId, $folder, $file) {
 		$date = $this->getCurrentDateTime();
 
 		$this->open_db();
@@ -302,6 +302,8 @@ class Database {
 		$this->db_connection->query($sql);
 		$messageId = $this->db_connection->insert_id;
 
+		$path = $folder . $messageId . '.' . $file;
+		
 		$sql = "INSERT INTO message_image (id, path) VALUES ('$messageId', '$path')";
 		$this->db_connection->query($sql);
 
