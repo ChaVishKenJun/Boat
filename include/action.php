@@ -796,11 +796,13 @@ class Action {
 
         if (isset($groupId) && isset($userId)) {
             $resultArray = [];
+
+            $this->updateMessagesToRead($userId, $groupId);
             
             if ($after != '') {                
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.id > $after ORDER BY message.id");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date, message.read_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' AND message.id > $after ORDER BY message.id");
             } else {
-                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.id");
+                $messages = $db->single_dynamic_query("SELECT message.id, message.date, user.id, user.firstname, user.lastname, message.deleted_date, message.edited_date, message.pinned_date, message.read_date FROM message INNER JOIN user ON message.user_id = user.id WHERE groupchat_id = '$groupId' ORDER BY message.id");
             }
 
             if ($messages != "false") {
@@ -864,7 +866,7 @@ class Action {
 
                     $isMine = $message[2] == $userId;
 
-                    array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data, 'deletedDate' => $message[5], 'editedDate' => $message[6], 'pinnedDate' => $message[7]));
+                    array_push($resultArray, array('messageId' => $messageId, 'date' => $message[1], 'isMine' => $isMine, 'userFirstName' => $message[3], 'userLastName' => $message[4], 'type' => $type, 'data' => $data, 'deletedDate' => $message[5], 'editedDate' => $message[6], 'pinnedDate' => $message[7], 'readDate' => $message[8]));
                 }
                 $response = json_encode($resultArray);
             }
@@ -1095,6 +1097,12 @@ class Action {
             echo "false";
         }
         exit;
+    }
+
+    function updateMessagesToRead($userId, $groupId)
+    {
+        global $db;
+        $db->updateMessagesToRead($userId, $groupId);
     }
 
     function pinMessage($messageId) {
