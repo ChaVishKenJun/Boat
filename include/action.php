@@ -872,7 +872,7 @@ class Action {
     }
 
     function getUpdatedMessages($updatedLaterThan) {
-        $resultArray = [];
+        $response = "false";
 
         global $session;
         global $db;
@@ -880,41 +880,15 @@ class Action {
         $groupId = $session->getData("GroupId");
 
         $editedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE edited_date > '$updatedLaterThan' AND groupchat_id = '$groupId'");
+        $pinnedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE pinned_date > '$updatedLaterThan' AND groupchat_id = '$groupId'");
+        $deletedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE deleted_date > '$updatedLaterThan' AND groupchat_id = '$groupId'");
+        $endedPolls = $db->single_dynamic_query("SELECT id FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message_poll.ended_date > '$updatedLaterThan' AND message.groupchat_id = '$groupId'");
+
+        if ($editedMessages != "false" || $pinnedMessages != "false" || $deletedMessages != "false" || $endedPolls != "false") {
+            $response = "true";
+        }
         
-        if ($editedMessages != "false") {
-            foreach ($editedMessages[0] as $message) {
-                $type = $db->getMessageType($message[0]);
-                switch ($type) {
-                    case "text":
-                        $data = $db->single_dynamic_query("SELECT data FROM message_text WHERE id = '$message[0]'")[0][0][0];
-                        array_push($resultArray, array('id' => $message[0], 'type' => $type, 'change' => 'edit', 'content' => $data));
-                    break;
-                }
-            }
-        }
-
-        $deletedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE deleted_date > '$updatedLaterThan'");
-
-        if ($deletedMessages != "false") {
-            foreach ($deletedMessages[0] as $message) {
-                $type = $db->getMessageType($message[0]);
-                array_push($resultArray, array('id' => $message[0], 'type' => $type, 'change' => 'delete', 'content' => ''));
-            }
-        }
-
-        $endedPolls = $db->single_dynamic_query("SELECT id FROM message_poll WHERE ended_date > '$updatedLaterThan'");
-
-        if ($endedPolls != "false") {
-            foreach ($endedPolls[0] as $poll) {
-                array_push($resultArray, array('id' => $poll[0], 'type' => "poll", 'change' => 'end', 'content' => ''));
-            }
-        }
-
-        if (empty($resultArray)) {
-            echo '';
-        } else {
-            echo json_encode($resultArray);
-        }
+        echo $response;
         exit;
     }
 

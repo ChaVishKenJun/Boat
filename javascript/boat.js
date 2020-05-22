@@ -1,6 +1,7 @@
 var dataLoader; // Interval object for polling data
-var timestamp;
-var isLoaded = false;
+
+var loadTimestamp = null;
+var updateTimestamp = null;
 
 function toDateString(datetime) {
     let string ='';
@@ -177,21 +178,19 @@ function openGroup(sender) {
 
 function sendMessage() {
     var message = $('#input').find('input').val();
-
     if (message != '') {
-        var xmlhttp = new XMLHttpRequest();
-
-        xmlhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                var response = this.responseText;   
-            }
-        };
-        
-        xmlhttp.open("GET", '?action=aSendMessage&message=' + message, true);
-        xmlhttp.send();
+        $.ajax({
+            url: "?action=aSendMessage",
+            type: "get",
+            data: { message : message }
+        })
+        .done(function (response, textStatus, jqXHR) {
+            $('#input').find('input').val('');
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log("Error" + textStatus + errorThrown);
+        })
     }
-
-    $('#input').find('input').val('');
 }
 
 function deleteMessage(messageId)
@@ -221,8 +220,7 @@ function pinMessage(messageId)
         type: "post",
         data: { messageId : messageId }
     })
-    .done(function (response, textStatus, jqXHR) {
-        loadMessages();
+    .done(function (response, textStatus, jqXHR) {d
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
@@ -319,18 +317,14 @@ function formatNotificationBell(hasNotifications) {
 function loadData() {
     /// <summary>Load data when page is newly open.</summary>
     loadMessages();
-    timestamp = new Date();
+    loadTimestamp = new Date();
+    updateTimestamp = new Date();
 }
 
 function pollData() {
     /// <summary>Check for newly created data and update the content.</summary>
-    loadMessages(timestamp);
-    updateMessages(timestamp);
-
-    if (isLoaded) {
-        timestamp = new Date();
-        isLoaded = false;
-    }
+    loadMessages(loadTimestamp);
+    updateMessages(updateTimestamp);
 }
 
 function loadMessages(laterThan = null) {
@@ -343,7 +337,7 @@ function loadMessages(laterThan = null) {
             if (response != '') {
                 $('#messages').html(formatMessages(response));                
                 scrollDown();
-                isLoaded = true;
+                loadTimestamp = new Date();
             } else {
                 $('#messages').html('This chat is still new.');
             }
@@ -351,7 +345,7 @@ function loadMessages(laterThan = null) {
             if (response != '') {
                 $('#messages').append(formatMessages(response));
                 scrollDown();
-                isLoaded = true;
+                loadTimestamp = new Date();
             }
         }
     })
@@ -360,7 +354,6 @@ function loadMessages(laterThan = null) {
         $('#messages').html("An error has occured. Please try again later.");
     })
     .always(function () {
-        return isLoaded;
     });
 }
 
@@ -371,15 +364,16 @@ function formatMessages(rawMessage) {
     var result = '';
 
     messages.forEach(message => {
+        
         if(message.pinnedDate != null)
         {
-            result+= '<div id="pinnedMessage" class="text-white bg-primary mb-3 ml-sm-auto col-lg-10 px-4 py-2 fixed-top">' + message.data + '</div>';
+            result += '<div id="pinnedMessage" class="text-white bg-primary mb-3 ml-sm-auto col-lg-10 px-4 py-2 fixed-top">' + message.data + '</div>';
         }
 
         result += "<div message-id='" + message.messageId + "' class='message container-fluid align-text-bottom'>";
 
         if (!message.isMine) {
-            result += "<div class='row'>";
+            result += "<div class='row user-row'>";
             result += "<div class='col'>";
             result += "<span class='user'>" + message.userFirstName + ' ' + message.userLastName + "</span>";
             result += "</div>";
@@ -388,13 +382,12 @@ function formatMessages(rawMessage) {
 
         if(message.deletedDate == null)
         {
-
-            result += "<div class='row'>";
+            result += "<div class='row content-row'>";
             result += "<div class='col position-relative'>";
+
             if(message.isMine)
             {
                 result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
-            
                 result += '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
                 result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
                 result += '</svg>';
@@ -403,7 +396,7 @@ function formatMessages(rawMessage) {
 
             switch (message.type) {
                 case "text":
-                    result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
+                    result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>"
                     result += "<span class='data'>" + message.data + "</span>";
                     result += "</span>";
                     break;
@@ -492,10 +485,10 @@ function formatMessages(rawMessage) {
                     break;
             }
             
-        }else{
-            result += "<span class='" + (message.isMine ? " float-right" : " float-left") + "'>";
-            result += "<span class='data'>Message deleted</span>";
-            result += "</span>";
+        }else {
+            html += "<span class='" + (message.isMine ? " float-right" : " float-left") + "'>";
+            html += "<span class='data'>Message deleted</span>";
+            html += "</span>";
         }
         
 
@@ -503,8 +496,8 @@ function formatMessages(rawMessage) {
         result += "</div>";
 
 
-        if(message.deletedDate == null && message.editedDate !=null){
-            result += "<div class='row'>";
+        if(message.deletedDate == null && message.editedDate != null) {
+            result += "<div class='row meta-row'>";
             result += "<div class='col position-relative'>";
             result += "<span class='float-right'>";
             result += "<span class='data'>Message edited</span>";
@@ -513,7 +506,7 @@ function formatMessages(rawMessage) {
             result += "</div>";
         }
     
-        result += "<div class='row mb-2'>"
+        result += "<div class='row mb-2 date-row'>"
         result += "<div class='col'>";
         result += "<span class='date badge text-muted font-weight-light" + (message.isMine ? " float-right" : "") + "'>" + message.date.split('.')[0] + "</span>";
         result += "</span>";
@@ -528,69 +521,22 @@ function formatMessages(rawMessage) {
 function updateMessages(updatedLaterThan) {
     $.ajax({
         url: "?action=aGetUpdatedMessages&updatedLaterThan=" + toDateString(updatedLaterThan),
-        type: "get" 
-    })
-    .done(function (response, textStatus, jqXHR) {
-        if (response != '' && response != "false") {
-            updatedMessages = JSON.parse(response);
-
-            updatedMessages.forEach(message => {
-                switch (message.change) {
-                    case 'delete':
-                    // Get message block
-                    var message = $('.message[message-id=' + message.id + ']');
-                    var isMine = $(message.find('.row')[0]).find('.col').find('div').hasClass('float-right') || $(message.find('.row')[0]).find('.col').find('span').hasClass('float-right');
-                    var html = '';
-                    html += "<span class='" + (isMine ? " float-right" : " float-left") + "'>";
-                    html += "<span class='data'>Message deleted</span>";
-                    html += "</span>";
-                    message.html(html);
-                    break;
-                }
-            });
-            
-
-
-            isLoaded = true;
-        }
-    })
-/*
-
-    $.ajax({
-        url: "?action=aLoadMessages" + (laterThan != null ? "&laterThan=" + toDateString(laterThan) : ''),
         type: "get"
     })
     .done(function (response, textStatus, jqXHR) {
-        if (laterThan == null) {
-            if (response != '') {
-                $('#messages').html(formatMessages(response));                
-                scrollDown();
-                timestamp = new Date();
-            } else {
-                $('#messages').html('This chat is still new.');
-            }
-        } else {
-            if (response != '') {
-                $('#messages').append(formatMessages(response));
-                scrollDown();
-                timestamp = new Date();
-            }
+        if (response == "true") {
+            loadMessages();
+            updateTimestamp = new Date();
         }
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-        console.log("An error occured while loading messages: " + textStatus + errorThrown);
-        $('#messages').html("An error has occured. Please try again later.");
-    })
-    .always(function () {
-    });*/
+    });
 }
 
 $('#input input').on('keyup keypress', function(e) {
     var keyCode = e.keyCode || e.which;
-    if (keyCode === 13) { 
+    if (keyCode === 13) {
         sendMessage();
     }
-  });
+});
 
 /* ------------------------------------------------------ POLL ----------------------------------------------------- */
 
@@ -652,10 +598,9 @@ function endPoll(messageId) {
                     data: { messageId: messageId , force: "true" }
                 })
                 .done(function (forceResponse, forceTextStatus, forceJqXHR) {
-                    if (forceResponse == "true") {    
-                        // Poll is successfully ended. Refresh the chat.
-                        loadMessages();
-                    }
+                })
+                .fail(function (forceJqXHR, forceTextStatus, forceErrorThrown) {
+                    console.log("Error" + textStatus + errorThrown);
                 })
             }
         }
