@@ -375,13 +375,13 @@ function formatMessages(rawMessage) {
             result += "<span class='user'>" + message.userFirstName + ' ' + message.userLastName + "</span>";
             result += "</div>";
             result += "</div>";
-        }                   
+        }    
+
+        result += "<div class='row content-row'>";
+        result += "<div class='col position-relative'>";             
 
         if(message.deletedDate == null)
         {
-            result += "<div class='row content-row'>";
-            result += "<div class='col position-relative'>";
-
             if(message.isMine)
             {
                 result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
@@ -389,7 +389,7 @@ function formatMessages(rawMessage) {
                 result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
                 result += '</svg>';
                 result += '</a>';   
-            }            
+            }               
 
             switch (message.type) {
                 case "text":
@@ -480,18 +480,15 @@ function formatMessages(rawMessage) {
                     break;
                 default:
                     break;
-            }
-            
+            }            
         }else {
             result += "<span class='" + (message.isMine ? " float-right" : " float-left") + "'>";
             result += "<span class='data'>Message deleted</span>";
             result += "</span>";
         }
         
-
         result += "</div>";
         result += "</div>";
-
 
         if(message.deletedDate == null && message.editedDate != null) {
             result += "<div class='row meta-row'>";
@@ -505,8 +502,23 @@ function formatMessages(rawMessage) {
     
         result += "<div class='row mb-2 date-row'>"
         result += "<div class='col'>";
+        //tracking message
+        if(message.isMine)
+        {
+            if(message.readDate == null){
+                result += '<svg class="bi bi-check float-right" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
+                result += '<path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
+                result += '</svg>';
+            } else {
+                result += '<svg class="bi bi-check-all float-right" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
+                result += '<path fill-rule="evenodd" d="M12.354 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
+                result += '<path d="M6.25 8.043l-.896-.897a.5.5 0 10-.708.708l.897.896.707-.707zm1 2.414l.896.897a.5.5 0 00.708 0l7-7a.5.5 0 00-.708-.708L8.5 10.293l-.543-.543-.707.707z"/>';
+                result += '</svg>';
+            }            
+        } 
+        //date
         result += "<span class='date badge text-muted font-weight-light" + (message.isMine ? " float-right" : "") + "'>" + message.date.split('.')[0] + "</span>";
-        result += "</span>";
+        result += "</span>";         
         result += "</div>";
         result += "</div>";
         result += "</div>";

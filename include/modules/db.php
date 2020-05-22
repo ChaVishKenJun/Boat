@@ -195,6 +195,14 @@ class Database {
 		$this->db_connection->close();
 	}
 
+	function updateMessagesToRead($userId, $groupId) {
+		$this->open_db();
+		$date = $this->getCurrentDateTime();
+		$sql="UPDATE message SET read_date = '$date' WHERE user_id != $userId AND groupchat_id = $groupId";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
 	function editMessage($messageId, $data) {
 		$this->open_db();
 		$date = $this->getCurrentDateTime();
