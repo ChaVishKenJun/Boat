@@ -668,3 +668,57 @@ function submitEditMessage(e) {
     });
     return false;
 }
+
+$('#messageInput').on('keyup keydown paste', function () {
+    var textMessage = $(this).val();
+
+    if(textMessage != null) {
+        if (textMessage.includes("@")) {
+            var query = textMessage.substr(textMessage.lastIndexOf("@") + 1);    
+            if (query != "") {
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        $('.dropup').remove();
+        
+                        var result = '';
+                        result += '<div class="dropup">';
+                        
+                        result += '<div class="dropdown-menu" aria-labelledby="dropupMenuButton" style="display: inline; margin-top: -5px;">';
+        
+                        if (this.responseText != '') {
+                            this.responseText.split('\\n').forEach(user => {
+                                var fields = user.split(',');
+                                result += '<a class="dropdown-item" style="cursor: pointer;" user-id=' + fields[0] + ' onclick=selectUser("' + fields[0] + '","' + fields[1] + '","' + fields[2] + '","' + fields[3] + '")>';
+                                result += fields[1] + ' ';
+                                result += fields[2] + ' ';
+                                result += '<span style="font-size:.75em;">' + fields[3] + '</span>';
+                                result += '</a>';
+                            });
+                        } else {
+                            result += '<a class="dropdown-item">';
+                            result += 'No Result';
+                            result += '</a>';
+                        }
+        
+                        result += '</div>';
+                        result += '</div>';
+        
+                        $('#messageInput').parent().prepend(result);
+                        $('#dropupMenuButton').click();
+                        
+                    }
+                };
+                xmlhttp.open("GET", "?action=aQueryUser&query=" + query, true);
+                xmlhttp.send();
+            } else {
+                $('.dropup').remove();
+            }
+        } else {
+            $('.dropup').remove();
+        }
+    } else {
+        $('.dropup').remove();
+    }
+      
+});

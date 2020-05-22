@@ -2,10 +2,10 @@
 <div id="input" class="card bg-light col-md-9 ml-sm-auto col-lg-10 px-4 py-2 fixed-bottom hidden" hidden>
     <div class="form-row">
         <div class="col-10">
-            <input type="text" class="form-control">
+            <input type="text" class="form-control" id="messageInput">
         </div>
         <div class="col-1">
-            <a tabindex="0" class="btn btn-lg btn-secondary btn-block text-white" role="button" data-toggle="popover">+</a>
+            <a tabindex="0" class="btn btn-lg btn-lsecondary btn-block text-white" role="button" data-toggle="popover">+</a>
         </div>
         <div class="col-1">
             <button class="btn btn-primary btn-lg btn-block" onclick=sendMessage()>Send</button>
