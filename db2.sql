@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- 생성 시간: 20-05-21 16:53
--- 서버 버전: 10.4.11-MariaDB
--- PHP 버전: 7.4.5
+-- Generation Time: May 21, 2020 at 06:42 PM
+-- Server version: 10.4.11-MariaDB
+-- PHP Version: 7.4.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 데이터베이스: `db2`
+-- Database: `db2`
 --
 
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `groupchat`
+-- Table structure for table `groupchat`
 --
 
 CREATE TABLE `groupchat` (
@@ -32,10 +32,17 @@ CREATE TABLE `groupchat` (
   `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `groupchat`
+--
+
+INSERT INTO `groupchat` (`id`, `name`) VALUES
+(19, 'Group 1');
+
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `message`
+-- Table structure for table `message`
 --
 
 CREATE TABLE `message` (
@@ -43,15 +50,29 @@ CREATE TABLE `message` (
   `groupchat_id` int(11) NOT NULL,
   `date` datetime(6) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `is_deleted` tinyint(1) NOT NULL,
-  `is_edited` tinyint(1) NOT NULL,
-  `is_pinned` tinyint(1) NOT NULL
+  `deleted_date` datetime(6) DEFAULT NULL,
+  `edited_date` datetime(6) DEFAULT NULL,
+  `pinned_date` datetime(6) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `message`
+--
+
+INSERT INTO `message` (`id`, `groupchat_id`, `date`, `user_id`, `deleted_date`, `edited_date`, `pinned_date`) VALUES
+(196, 19, '2020-05-21 13:53:36.966922', 12, NULL, NULL, NULL),
+(197, 19, '2020-05-21 14:00:42.174007', 12, NULL, NULL, NULL),
+(198, 19, '2020-05-21 15:23:06.395603', 12, NULL, NULL, NULL),
+(199, 19, '2020-05-21 17:05:51.215842', 12, NULL, NULL, NULL),
+(200, 19, '2020-05-21 17:05:54.535563', 12, NULL, NULL, NULL),
+(201, 19, '2020-05-21 17:10:46.511169', 12, NULL, NULL, NULL),
+(202, 19, '2020-05-21 17:10:53.814824', 12, NULL, NULL, NULL),
+(203, 19, '2020-05-21 17:11:01.870855', 12, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `message_image`
+-- Table structure for table `message_image`
 --
 
 CREATE TABLE `message_image` (
@@ -62,7 +83,7 @@ CREATE TABLE `message_image` (
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `message_poll`
+-- Table structure for table `message_poll`
 --
 
 CREATE TABLE `message_poll` (
@@ -70,13 +91,13 @@ CREATE TABLE `message_poll` (
   `title` varchar(255) NOT NULL,
   `due` datetime DEFAULT NULL,
   `multi_select` tinyint(1) NOT NULL,
-  `is_ended` tinyint(1) NOT NULL
+  `ended_date` datetime(6) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `message_text`
+-- Table structure for table `message_text`
 --
 
 CREATE TABLE `message_text` (
@@ -84,10 +105,24 @@ CREATE TABLE `message_text` (
   `data` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `message_text`
+--
+
+INSERT INTO `message_text` (`id`, `data`) VALUES
+(196, 'hi'),
+(197, 'hihi'),
+(198, 'hi loooo'),
+(199, 'hi'),
+(200, 'looo'),
+(201, 'hello'),
+(202, 'hello'),
+(203, 'how are you');
+
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `message_video`
+-- Table structure for table `message_video`
 --
 
 CREATE TABLE `message_video` (
@@ -98,7 +133,7 @@ CREATE TABLE `message_video` (
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `notification`
+-- Table structure for table `notification`
 --
 
 CREATE TABLE `notification` (
@@ -110,10 +145,17 @@ CREATE TABLE `notification` (
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `notification`
+--
+
+INSERT INTO `notification` (`id`, `message`, `is_read`, `date`, `message_id`, `user_id`) VALUES
+(6, 'Welcome to our application!', 0, '2020-05-21 13:53:26', NULL, 12);
+
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `poll_option`
+-- Table structure for table `poll_option`
 --
 
 CREATE TABLE `poll_option` (
@@ -125,7 +167,7 @@ CREATE TABLE `poll_option` (
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `user`
+-- Table structure for table `user`
 --
 
 CREATE TABLE `user` (
@@ -136,10 +178,17 @@ CREATE TABLE `user` (
   `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`id`, `firstname`, `lastname`, `email`, `password`) VALUES
+(12, 'Chantal', 'Ochiai', 'chantalochiai@gmail.com', 'fe31fa90359033016ca35355d37f51e2');
+
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `user_group`
+-- Table structure for table `user_group`
 --
 
 CREATE TABLE `user_group` (
@@ -148,10 +197,17 @@ CREATE TABLE `user_group` (
   `group_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `user_group`
+--
+
+INSERT INTO `user_group` (`id`, `user_id`, `group_id`) VALUES
+(21, 12, 19);
+
 -- --------------------------------------------------------
 
 --
--- 테이블 구조 `vote`
+-- Table structure for table `vote`
 --
 
 CREATE TABLE `vote` (
@@ -161,17 +217,17 @@ CREATE TABLE `vote` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- 덤프된 테이블의 인덱스
+-- Indexes for dumped tables
 --
 
 --
--- 테이블의 인덱스 `groupchat`
+-- Indexes for table `groupchat`
 --
 ALTER TABLE `groupchat`
   ADD PRIMARY KEY (`id`);
 
 --
--- 테이블의 인덱스 `message`
+-- Indexes for table `message`
 --
 ALTER TABLE `message`
   ADD PRIMARY KEY (`id`),
@@ -179,31 +235,31 @@ ALTER TABLE `message`
   ADD KEY `fk_foreign_key_message_groupchat_id` (`groupchat_id`);
 
 --
--- 테이블의 인덱스 `message_image`
+-- Indexes for table `message_image`
 --
 ALTER TABLE `message_image`
   ADD PRIMARY KEY (`id`);
 
 --
--- 테이블의 인덱스 `message_poll`
+-- Indexes for table `message_poll`
 --
 ALTER TABLE `message_poll`
   ADD PRIMARY KEY (`id`);
 
 --
--- 테이블의 인덱스 `message_text`
+-- Indexes for table `message_text`
 --
 ALTER TABLE `message_text`
   ADD PRIMARY KEY (`id`);
 
 --
--- 테이블의 인덱스 `message_video`
+-- Indexes for table `message_video`
 --
 ALTER TABLE `message_video`
   ADD PRIMARY KEY (`id`);
 
 --
--- 테이블의 인덱스 `notification`
+-- Indexes for table `notification`
 --
 ALTER TABLE `notification`
   ADD PRIMARY KEY (`id`),
@@ -211,20 +267,20 @@ ALTER TABLE `notification`
   ADD KEY `fk_foreign_notification_user_id` (`user_id`);
 
 --
--- 테이블의 인덱스 `poll_option`
+-- Indexes for table `poll_option`
 --
 ALTER TABLE `poll_option`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_message_poll_id` (`message_poll_id`);
 
 --
--- 테이블의 인덱스 `user`
+-- Indexes for table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`);
 
 --
--- 테이블의 인덱스 `user_group`
+-- Indexes for table `user_group`
 --
 ALTER TABLE `user_group`
   ADD PRIMARY KEY (`id`),
@@ -232,7 +288,7 @@ ALTER TABLE `user_group`
   ADD KEY `fk_foreign_key_group_id` (`group_id`);
 
 --
--- 테이블의 인덱스 `vote`
+-- Indexes for table `vote`
 --
 ALTER TABLE `vote`
   ADD PRIMARY KEY (`id`),
@@ -240,84 +296,84 @@ ALTER TABLE `vote`
   ADD KEY `fk_poll_option_id` (`poll_option_id`);
 
 --
--- 덤프된 테이블의 AUTO_INCREMENT
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- 테이블의 AUTO_INCREMENT `groupchat`
+-- AUTO_INCREMENT for table `groupchat`
 --
 ALTER TABLE `groupchat`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- 테이블의 AUTO_INCREMENT `message`
+-- AUTO_INCREMENT for table `message`
 --
 ALTER TABLE `message`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=203;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=204;
 
 --
--- 테이블의 AUTO_INCREMENT `notification`
+-- AUTO_INCREMENT for table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- 테이블의 AUTO_INCREMENT `poll_option`
+-- AUTO_INCREMENT for table `poll_option`
 --
 ALTER TABLE `poll_option`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
--- 테이블의 AUTO_INCREMENT `user`
+-- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- 테이블의 AUTO_INCREMENT `user_group`
+-- AUTO_INCREMENT for table `user_group`
 --
 ALTER TABLE `user_group`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
--- 테이블의 AUTO_INCREMENT `vote`
+-- AUTO_INCREMENT for table `vote`
 --
 ALTER TABLE `vote`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- 덤프된 테이블의 제약사항
+-- Constraints for dumped tables
 --
 
 --
--- 테이블의 제약사항 `message`
+-- Constraints for table `message`
 --
 ALTER TABLE `message`
   ADD CONSTRAINT `fk_foreign_key_message_groupchat_id` FOREIGN KEY (`groupchat_id`) REFERENCES `groupchat` (`id`),
   ADD CONSTRAINT `fk_foreign_key_message_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 
 --
--- 테이블의 제약사항 `notification`
+-- Constraints for table `notification`
 --
 ALTER TABLE `notification`
   ADD CONSTRAINT `fk_foreign_key_message_id` FOREIGN KEY (`message_id`) REFERENCES `message` (`id`),
   ADD CONSTRAINT `fk_foreign_notification_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 
 --
--- 테이블의 제약사항 `poll_option`
+-- Constraints for table `poll_option`
 --
 ALTER TABLE `poll_option`
   ADD CONSTRAINT `fk_message_poll_id` FOREIGN KEY (`message_poll_id`) REFERENCES `message_poll` (`id`);
 
 --
--- 테이블의 제약사항 `user_group`
+-- Constraints for table `user_group`
 --
 ALTER TABLE `user_group`
   ADD CONSTRAINT `fk_foreign_key_group_id` FOREIGN KEY (`group_id`) REFERENCES `groupchat` (`id`),
   ADD CONSTRAINT `fk_foreign_key_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 
 --
--- 테이블의 제약사항 `vote`
+-- Constraints for table `vote`
 --
 ALTER TABLE `vote`
   ADD CONSTRAINT `fk_poll_option_id` FOREIGN KEY (`poll_option_id`) REFERENCES `poll_option` (`id`),

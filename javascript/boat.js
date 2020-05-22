@@ -1,6 +1,6 @@
 var dataLoader; // Interval object for polling data
 
-var loadTimestamp = null;
+var lastMessageId = 0;
 var updateTimestamp = null;
 
 function toDateString(datetime) {
@@ -317,27 +317,25 @@ function formatNotificationBell(hasNotifications) {
 function loadData() {
     /// <summary>Load data when page is newly open.</summary>
     loadMessages();
-    loadTimestamp = new Date();
     updateTimestamp = new Date();
 }
 
 function pollData() {
     /// <summary>Check for newly created data and update the content.</summary>
-    loadMessages(loadTimestamp);
+    loadMessages(lastMessageId);
     updateMessages(updateTimestamp);
 }
 
-function loadMessages(laterThan = null) {
+function loadMessages(after = 0) {
     $.ajax({
-        url: "?action=aLoadMessages" + (laterThan != null ? "&laterThan=" + toDateString(laterThan) : ''),
+        url: "?action=aLoadMessages" + (after != 0 ? "&after=" + after : ''),
         type: "get"
     })
     .done(function (response, textStatus, jqXHR) {
-        if (laterThan == null) {
+        if (after == 0) {
             if (response != '') {
                 $('#messages').html(formatMessages(response));                
                 scrollDown();
-                loadTimestamp = new Date();
             } else {
                 $('#messages').html('This chat is still new.');
             }
@@ -345,7 +343,6 @@ function loadMessages(laterThan = null) {
             if (response != '') {
                 $('#messages').append(formatMessages(response));
                 scrollDown();
-                loadTimestamp = new Date();
             }
         }
     })
@@ -486,9 +483,9 @@ function formatMessages(rawMessage) {
             }
             
         }else {
-            html += "<span class='" + (message.isMine ? " float-right" : " float-left") + "'>";
-            html += "<span class='data'>Message deleted</span>";
-            html += "</span>";
+            result += "<span class='" + (message.isMine ? " float-right" : " float-left") + "'>";
+            result += "<span class='data'>Message deleted</span>";
+            result += "</span>";
         }
         
 
@@ -499,7 +496,7 @@ function formatMessages(rawMessage) {
         if(message.deletedDate == null && message.editedDate != null) {
             result += "<div class='row meta-row'>";
             result += "<div class='col position-relative'>";
-            result += "<span class='float-right'>";
+            result += "<span " + (message.isMine ? "class='float-right'" : "") + ">";
             result += "<span class='data'>Message edited</span>";
             result += "</span>";
             result += "</div>";
@@ -513,6 +510,8 @@ function formatMessages(rawMessage) {
         result += "</div>";
         result += "</div>";
         result += "</div>";
+
+        lastMessageId = message.messageId;
     });
     
     return result;
