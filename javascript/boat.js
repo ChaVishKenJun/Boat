@@ -440,6 +440,10 @@ function formatMessages(rawMessage) {
                             result += "<form onsubmit='return vote(event);'>";
                             result += "<fieldset>";
                             result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
+
+                            if (message.data.due != null) {
+                                result += "<div class='text-center font-weight-lighter mb-1'><small>Due: " + message.data.due + "</small></div>";
+                            }
             
                             if (message.data.multiselect == "1") {
                                 for (let index = 0; index < message.data.options.length; index++) {
@@ -474,7 +478,7 @@ function formatMessages(rawMessage) {
                             }
             
                             result += "<button class='btn btn-primary btn-sm btn-block' type='submit'>Vote</button>";
-        
+
                             if (message.isMine) {
                                 result += endButtonHtml;
                             }

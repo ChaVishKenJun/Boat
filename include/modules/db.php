@@ -273,6 +273,15 @@ class Database {
 		$this->db_connection->close();
 	}
 
+	function endPassedPolls($groupId) {
+		$now = $this->getCurrentDateTime();
+
+		$this->open_db();
+		$sql = "UPDATE message INNER JOIN message_poll ON message.id = message_poll.id SET message_poll.ended_date = '$now' WHERE message_poll.ended_date IS NULL AND message.groupchat_id = $groupId AND message_poll.due < '$now'";
+		$this->db_connection->query($sql);
+		$this->db_connection->close();
+	}
+
 	function getCurrentDateTime() {
 		$t = microtime(true);
 		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
