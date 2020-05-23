@@ -365,7 +365,30 @@ function formatMessages(rawMessage) {
         
         if(message.pinnedDate != null)
         {
-            result += '<div id="pinnedMessage" class="text-white bg-primary mb-3 ml-sm-auto col-lg-10 px-4 py-2 fixed-top">' + message.data + '</div>';
+            result += '<div id="pinnedMessage" message-id="' + message.messageId + '" class="text-white bg-primary mb-3 ml-md-auto col-lg-10 col-md-9 col-12 px-4 py-2 fixed-top">';
+            result += '<div>'
+            result += '<div>'
+            switch (message.type) {
+                case "text":
+                    result += message.data;
+                    break;
+                case "image":
+                    result += "<div class='image bg-light px-3 py-1 m-1 rounded'></div>";
+                    break;
+                case "video":
+                    result += "<div class='video bg-light px-3 py-1 m-1 rounded'></div>";
+                    break;
+                case "poll":
+                    result += "<div class='poll bg-light px-3 py-1 m-1 rounded'>";
+                    result += formatPoll(message);  
+            result += '</div>';
+            break;
+                default:
+                    break;
+            }
+            result += '</div>';
+            result += '</div>';
+            result += '</div>';
         }
 
         result += "<div message-id='" + message.messageId + "' class='message container-fluid align-text-bottom'>";
@@ -404,85 +427,9 @@ function formatMessages(rawMessage) {
                 case "video":
                     result += "<div class='video bg-light px-3 py-1 m-1 rounded'></div>";
                     break;
-                case "poll":
-                    const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(" + message.messageId + ");'>End</a>";
-    
+                case "poll":    
                     result += "<div class='poll bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
-    
-                    if (message.data.endedDate != null) {
-                        result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
-                        result += formatPollResult(message.data.result);
-                    } else {
-                        if (message.data.voted == '1') {
-                            result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
-                            result += "<div class='row mt-2'>";
-                            result += "<div class='col text-center text-success'>";
-                            result += '<svg class="bi bi-check" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
-                            result += '<path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
-                            result += '</svg>';
-                            result += "</div>";
-                            result += "</div>";
-                            result += "<div class='row'>";
-                            result += "<div class='col text-center text-success'>";
-                            result += '<span class="font-weight-light">You voted!</span>';
-                            result += "</div>";
-                            result += "</div>";
-                            if (message.isMine) {
-                                result += endButtonHtml;
-                            }
-                            
-                        } else {
-                            result += "<form onsubmit='return vote(event);'>";
-                            result += "<fieldset>";
-                            result += "<h5 class='text-center mt-1'>" + message.data.title + "</h5>";
-
-                            if (message.data.due != null) {
-                                result += "<div class='text-center font-weight-lighter mb-1'><small>Due: " + message.data.due + "</small></div>";
-                            }
-            
-                            if (message.data.multiselect == "1") {
-                                for (let index = 0; index < message.data.options.length; index++) {
-                                    const option = message.data.options[index];
-                                    
-                                    result += '<div class="input-group mb-3">';
-                                    result += '<div class="input-group-prepend">';
-                                    result += '<div class="input-group-text">';
-                                    result += '<input name="' + message.messageId + '" type="checkbox" value="' + option.id + '" id="option' + option.id + '">';
-                                    result += '</div>';
-                                    result += '</div>';
-                                    result += '<label class="form-control" for="option' + option.id +'">';
-                                    result += option.name;
-                                    result += '</label>';
-                                    result += '</div>';
-                                }
-                            } else {
-                                for (let index = 0; index < message.data.options.length; index++) {
-                                    const option = message.data.options[index];
-            
-                                    result += '<div class="input-group mb-3">';
-                                    result += '<div class="input-group-prepend">';
-                                    result += '<div class="input-group-text">';
-                                    result += '<input name="' + message.messageId + '"type="radio" id="radios' + message.messageId + '" value="' + option.id + '" checked>';
-                                    result += '</div>';
-                                    result += '</div>';
-                                    result += '<label class="form-control" for="radios' + message.messageId + '">';
-                                    result += option.name;
-                                    result += '</label>';
-                                    result += '</div>';
-                                }
-                            }
-            
-                            result += "<button class='btn btn-primary btn-sm btn-block' type='submit'>Vote</button>";
-
-                            if (message.isMine) {
-                                result += endButtonHtml;
-                            }
-        
-                            result += "</fieldset>";
-                            result += "</form>";
-                        }
-                    }
-    
+                    result += formatPoll(message);    
                     result += "</div>";
                     break;
                 default:
@@ -533,6 +480,86 @@ function formatMessages(rawMessage) {
         lastMessageId = message.messageId;
     });
     
+    return result;
+}
+
+function formatPoll(message){
+    result = '';
+
+    const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(" + message.messageId + ");'>End</a>";
+    if (message.data.endedDate != null) {
+        result += "<h5 class='text-dark text-center mt-1'>" + message.data.title + "</h5>";
+        result += formatPollResult(message.data.result);
+    } else {
+        if (message.data.voted == '1') {
+            result += "<h5 class='text-dark text-center mt-1'>" + message.data.title + "</h5>";
+            result += "<div class='row mt-2'>";
+            result += "<div class='col text-center text-success'>";
+            result += '<svg class="bi bi-check" width="2em" height="2em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
+            result += '<path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
+            result += '</svg>';
+            result += "</div>";
+            result += "</div>";
+            result += "<div class='row'>";
+            result += "<div class='col text-center text-success'>";
+            result += '<span class="font-weight-light">You voted!</span>';
+            result += "</div>";
+            result += "</div>";
+            if (message.isMine) {
+                result += endButtonHtml;
+            }
+            
+        } else {
+            result += "<form onsubmit='return vote(event);'>";
+            result += "<fieldset>";
+            result += "<h5 class='text-dark text-center mt-1'>" + message.data.title + "</h5>";
+
+            if (message.data.due != null) {
+                result += "<div class='text-center font-weight-lighter mb-1'><small>Due: " + message.data.due + "</small></div>";
+            }
+
+            if (message.data.multiselect == "1") {
+                for (let index = 0; index < message.data.options.length; index++) {
+                    const option = message.data.options[index];
+                    
+                    result += '<div class="input-group mb-3">';
+                    result += '<div class="input-group-prepend">';
+                    result += '<div class="input-group-text">';
+                    result += '<input name="' + message.messageId + '" type="checkbox" value="' + option.id + '" id="option' + option.id + '">';
+                    result += '</div>';
+                    result += '</div>';
+                    result += '<label class="form-control" for="option' + option.id +'">';
+                    result += option.name;
+                    result += '</label>';
+                    result += '</div>';
+                }
+            } else {
+                for (let index = 0; index < message.data.options.length; index++) {
+                    const option = message.data.options[index];
+
+                    result += '<div class="input-group mb-3">';
+                    result += '<div class="input-group-prepend">';
+                    result += '<div class="input-group-text">';
+                    result += '<input name="' + message.messageId + '"type="radio" id="radios' + message.messageId + '" value="' + option.id + '" checked>';
+                    result += '</div>';
+                    result += '</div>';
+                    result += '<label class="form-control" for="radios' + message.messageId + '">';
+                    result += option.name;
+                    result += '</label>';
+                    result += '</div>';
+                }
+            }
+
+            result += "<button class='btn btn-primary btn-sm btn-block' type='submit'>Vote</button>";
+
+            if (message.isMine) {
+                result += endButtonHtml;
+            }
+
+            result += "</fieldset>";
+            result += "</form>";
+        }
+    }
     return result;
 }
 
