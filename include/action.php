@@ -32,8 +32,8 @@ class Action {
             case "aQueryUser":
                 $this->queryUser($_GET["query"]);
             break;
-            case "aCreateGroup":                
-                $this->createGroup($_POST['name'], $_POST["users"]);
+            case "aCreateGroup":  
+                $this->createGroup($_POST["data"]);
             break;
             case "aLoadGroups":
                 $this->loadGroups();
@@ -188,10 +188,22 @@ class Action {
         }
     }
     
-    function createGroup($name, $userIds) {
+    function createGroup($data) {
 		global $header;
 		global $session;
         global $db;
+
+
+        foreach (json_decode($data, true) as $field) {
+            switch ($field["name"]) {
+                case "name":
+                    $name = $field["value"];
+                break;
+                case "users":
+                    $userIds = $field["value"];
+                break;
+            }
+        }
 
         $userIdArray = explode(',', $userIds);
 
@@ -209,9 +221,8 @@ class Action {
         if (!in_array($session->getData("UserId"), $userIdArray)) {
             $db->addUserToGroup($groupId, $session->getData("UserId"));
         }
-
-        // Reload the page
-        $header->setHeader("mHome");
+        
+        exit;
     }
 
     function loadGroups() {

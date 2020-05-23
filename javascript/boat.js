@@ -156,6 +156,8 @@ $(document).ready(function () {
     xmlhttp.send();
 
     $('input[type="file"]').on('change', updateLabel);
+
+    $('#newGroupForm').on('submit', submitNewGroup);
 });
 
 /* ----------------------------------------------------- GROUP ----------------------------------------------------- */
@@ -357,7 +359,7 @@ function loadMessages(after = 0) {
                 $('#messages').html(formatMessages(response));       
                 
                 $($('.message')[0]).css('margin-top', $('#pinnedMessage').innerHeight())
-                
+
                 scrollDown();
                 loadImages();
                 loadVideos();
@@ -902,7 +904,6 @@ function sendImage(e) {
         data: form,
     })
     .done(function (response, textStatus, jqXHR) {
-        alert(response);
         if (response == 'true') {
 
         } else {
@@ -935,7 +936,6 @@ function sendVideo(e) {
         data: form,
     })
     .done(function (response, textStatus, jqXHR) {
-        alert(response);
         if (response == 'true') {
 
         } else {
@@ -995,4 +995,23 @@ function loadVideos() {
             });
         }
     });
+}
+
+function submitNewGroup(e) {
+    e.preventDefault();
+
+    $.ajax({
+        url: "?action=aCreateGroup",
+        type: "post",
+        data: { data: JSON.stringify($(e.target).serializeArray()) }
+    })
+    .done(function (response, textStatus, jqXHR) {
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+        $($($(e.target).parent().parent()).find('.close')).click();
+    });
+    return false;
 }

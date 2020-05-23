@@ -15,7 +15,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="?action=aCreateGroup" method="post">
+            <form id="newGroupForm">
                 <div class="modal-body">
                         <div class="form-group row">
                             <label for="inputGroupName" class="col-sm-2 col-form-label">Name</label>
