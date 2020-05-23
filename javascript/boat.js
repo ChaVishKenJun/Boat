@@ -680,7 +680,7 @@ function submitEditMessage(e) {
 $('#messageInput').on('keyup keydown paste', function () {
     var textMessage = $(this).val();
 
-    if(textMessage != null) {
+    if(textMessage != "") {
         if (textMessage.includes("@")) {
             var query = textMessage.substr(textMessage.lastIndexOf("@") + 1);    
             if (query != "") {
@@ -697,7 +697,7 @@ $('#messageInput').on('keyup keydown paste', function () {
                         if (this.responseText != '') {
                             this.responseText.split('\\n').forEach(user => {
                                 var fields = user.split(',');
-                                result += '<a class="dropdown-item" style="cursor: pointer;" user-id=' + fields[0] + ' onclick=selectUser("' + fields[0] + '","' + fields[1] + '","' + fields[2] + '","' + fields[3] + '")>';
+                                result += '<a class="dropdown-item" style="cursor: pointer;" user-id=' + fields[0] + ' onclick=selectMentionUser("' + fields[1] + '","' + fields[2] + '")>';
                                 result += fields[1] + ' ';
                                 result += fields[2] + ' ';
                                 result += '<span style="font-size:.75em;">' + fields[3] + '</span>';
@@ -717,7 +717,7 @@ $('#messageInput').on('keyup keydown paste', function () {
                         
                     }
                 };
-                xmlhttp.open("GET", "?action=aQueryUser&query=" + query, true);
+                xmlhttp.open("GET", "?action=aQueryUserFromCurrentGroup&query=" + query, true);
                 xmlhttp.send();
             } else {
                 $('.dropup').remove();
@@ -730,6 +730,13 @@ $('#messageInput').on('keyup keydown paste', function () {
     }
       
 });
+
+function selectMentionUser(firstname, lastname) {   
+    var textMessage = $('#messageInput').val().substr(0, $('#messageInput').val().lastIndexOf("@") +1);    
+    $('#messageInput').val(textMessage + firstname + " " + lastname + " ");
+    $('.dropup').remove();    
+}
+
 /* ----------------------------------------------------- Media ----------------------------------------------------- */
 function updateLabel() {
     let value = $(this).val();

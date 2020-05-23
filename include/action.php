@@ -86,6 +86,8 @@ class Action {
             case "aLoadVideo":
                 $this->loadVideo($_GET["messageId"]);
             break;
+            case "aQueryUserFromCurrentGroup":
+                $this->QueryUserFromCurrentGroup($_GET["query"]);
         }
     }
     
@@ -1207,6 +1209,42 @@ class Action {
         }
         echo $response;
         exit;
+    }
+
+    /**
+     * 
+     * @param string $query 
+     * @return
+     */
+    function queryUserFromCurrentGroup($query) {
+        global $db;  
+        global $session;
+
+        $groupId = $session->getData("GroupId");
+
+        $result = '';      
+        $users = $db->single_dynamic_query("SELECT user.id, user.firstname, user.lastname, user.email FROM user_group inner join user on user_group.user_id = user.id WHERE user_group.group_id = $groupId AND (user.firstname LIKE '%$query%' OR user.lastname LIKE '%$query%' OR user.email LIKE '%$query')");
+        if ($users != "false") {
+            $fields = $users[1]['con'][0];
+            for ($i = 0; $i < count($users[0]); $i++) {
+                $field = 0;
+                while ($field <= $fields - 1) {
+                    $result .= $users[0][$i][$field];
+                    if ($field != $fields - 1) {
+                        $result .= ',';
+                    }
+                    $field++;
+                }
+                if ($i != count($users[0]) - 1) {
+                    $result .= '\n';
+                }
+            }
+            echo $result;
+            exit;
+        } else {
+            echo '';
+            exit;
+        }
     }
 }
 
