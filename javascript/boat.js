@@ -44,7 +44,7 @@ function adjustView() {
         $('.sidebar').hide();
     } else {
         $('#openSidebarButton').hide();
-        $("#slide").show();
+        $(".sidebar").show();
     }
 }
 
