@@ -51,6 +51,7 @@ body {
 .sidebar .nav-link {
 	font-weight: 500;
 	color: #333;
+	white-space: nowrap;
 }
 .sidebar .nav-link .feather {
 	margin-right: 4px;

@@ -1,5 +1,5 @@
 <!-- Group List -->
-<nav class="col-md-2 d-none d-md-block bg-light sidebar">
+<nav class="col-lg-2 col-md-3 col-4 bg-light sidebar">
     <div class="sidebar-sticky">
         <ul class="nav flex-column"></ul>
     </div>
