@@ -5,9 +5,6 @@ class Database {
 		$db->set_charset("utf8");
 	}
 
-	/* Database functions */
-
-	// dynamic_singlequery before
 	function single_dynamic_query($query) {
 		$this->open_db();
 		$statement = $this->db_connection->query($query);
@@ -65,8 +62,7 @@ class Database {
 		$statement->close();
 		return $result_array;
 	}
-
-	// multiquery_dynamic_sqlcommand before
+	
 	function multi_dynamic_command($command) {
 		$this->open_db();
 		$count = 1;
@@ -106,8 +102,7 @@ class Database {
 		$statement->close();
 		return $result_array;
 	}
-
-	//prepared_dynamic_sqlcommands before
+	
 	function prepared_dynamic_command($command, $number_of_execution = 1) {
 		$this->open_db();
 		$statement = $this->db_connection->prepare($command); 
@@ -118,8 +113,15 @@ class Database {
 		}
 		return $execution_count;
 	}
-
-	/* Static Functions */
+	
+	function createUser($firstname, $lastname, $email, $password) {
+		$this->open_db();
+		$sql = "INSERT INTO user (firstname, lastname, email, password) VALUES ('$firstname', '$lastname', '$email', '$password')";
+		$this->db_connection->query($sql);
+		$userId = $this->db_connection->insert_id;
+		$this->db_connection->close();
+		return $userId;
+	}
 
 	function getUserID($email) {
 		//its a static prepared and encryptet sql SELECT

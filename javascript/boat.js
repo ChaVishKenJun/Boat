@@ -1,24 +1,32 @@
-var dataLoader; // Interval object for polling data
+/* CONSTANT VARIABLES */
+const newGroupLi = '<li class="nav-item">' + 
+    '<a class="nav-link active" href="#" data-toggle="modal" data-target="#exampleModalCenter">' + 
+        '<svg class="bi bi-plus-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+            '<path fill-rule="evenodd" d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H4a.5.5 0 010-1h3.5V4a.5.5 0 01.5-.5z" clip-rule="evenodd"/>' + 
+            '<path fill-rule="evenodd" d="M7.5 8a.5.5 0 01.5-.5h4a.5.5 0 010 1H8.5V12a.5.5 0 01-1 0V8z" clip-rule="evenodd"/>' + 
+            '<path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm0 1A8 8 0 108 0a8 8 0 000 16z" clip-rule="evenodd"/>' + 
+        '</svg>' + 
+        '<span>New group</span>' + 
+    '</a>' + 
+    '</li>';
 
+/* GLOBAL VARIABLES */
+var dataLoader; // Interval object for polling data
 var lastMessageId = 0;
 var updateTimestamp = null;
 
 function toDateString(datetime) {
     let string ='';
-    string += datetime.getFullYear().toString();
-    string += '-';
-    string += ("0" + (datetime.getMonth() + 1)).slice(-2).toString();
-    string += '-';
-    string += ("0" + datetime.getDate()).slice(-2).toString();
-    string += ' ';
-    string += ("0" + datetime.getHours()).slice(-2).toString();
-    string += ':';
-    string += ("0" + datetime.getMinutes()).slice(-2);
-    string += ':';
-    string += ("0" + datetime.getSeconds()).slice(-2);
-    string += '.';
-    string += datetime.getMilliseconds();
-    string += '000';
+
+    string += datetime.getFullYear() + '-';
+    string += ("0" + (datetime.getMonth() + 1)).slice(-2) + '-';
+    string += ("0" + datetime.getDate()).slice(-2) + ' ';
+
+    string += ("0" + datetime.getHours()).slice(-2) + ':';
+    string += ("0" + datetime.getMinutes()).slice(-2) + ':';
+    string += ("0" + datetime.getSeconds()).slice(-2) + '.';
+    string += datetime.getMilliseconds() + '000';
+
     return string;
 }
 
@@ -27,6 +35,12 @@ function scrollDown() {
 }
 
 $(document).ready(function () {
+    // Load groups
+    loadGroups();
+    
+    // Load groups every second
+    setInterval(loadGroups, 1000);
+
     $('body').popover({
         placement: 'bottom',
         html: true,
@@ -122,6 +136,8 @@ $(document).ready(function () {
 
 /* ----------------------------------------------------- GROUP ----------------------------------------------------- */
 
+/* ---------------------------------------------------- CREATE ---------------------------------------------------- */
+
 function selectUser(id, firstname, lastname, email) {   
     // TODO: Remove email 
     if (!($('#userIds').val()).split(',').includes(id)) {
@@ -152,6 +168,38 @@ function removeUser(id) {
     $('.badge[user-id=' + id + ']').remove();
 }
 
+/* ----------------------------------------------------- READ ----------------------------------------------------- */
+
+function loadGroups() {
+    $.ajax({
+        url: "?action=aLoadGroups",
+        type: "get"
+    })
+    .done(function (response, textStatus, jqXHR) {
+        let html = newGroupLi;
+
+        try {
+            var groups = JSON.parse(response);
+
+            groups.forEach(group => {
+                html += '<li class="nav-item">';
+                html += '<a class="nav-link" href="#" group-id="' + group['id'] + '" onclick=openGroup(this)>';
+                html += '<span>' + group['name'] + '</span>';
+                html += '</a>';
+                html += '</li>';
+            });
+        } catch (e) {
+            console.log("Invalid JSON: " + response);
+        }
+
+        $('.nav').html(html);
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("An error occured while loading groups: " + textStatus + errorThrown);
+        $('.nav').html("An error has occured. Please try again later.");
+    })
+}
+
 function openGroup(sender) {
     clearInterval(dataLoader);
 
@@ -176,60 +224,6 @@ function openGroup(sender) {
         xmlhttp.open("GET", "?action=aOpenGroup&groupId=" + groupId, true);
         xmlhttp.send();
     }
-}
-
-function sendMessage() {
-    var message = $('#input').find('input').val();
-    if (message != '') {
-        $.ajax({
-            url: "?action=aSendMessage",
-            type: "get",
-            data: { message : message }
-        })
-        .done(function (response, textStatus, jqXHR) {
-            $('#input').find('input').val('');
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            console.log("Error" + textStatus + errorThrown);
-        })
-    }
-}
-
-function deleteMessage(messageId)
-{
-    if (confirm('Are you sure you want to delete this message?')) {
-        $.ajax({
-            url: "?action=aDeleteMessage",
-            type: "post",
-            data: { messageId : messageId }
-        })
-        .done(function (response, textStatus, jqXHR) {
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            console.log("Error" + textStatus + errorThrown);
-        })
-        .always(function () {
-
-        });
-    } else {
-    }
-}
-
-function pinMessage(messageId)
-{
-    $.ajax({
-        url: "?action=aPinMessage",
-        type: "post",
-        data: { messageId : messageId }
-    })
-    .done(function (response, textStatus, jqXHR) {
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-        console.log("Error" + textStatus + errorThrown);
-    })
-    .always(function () {
-
-    });
 }
 
 /* ------------------------------------------------- NOTIFICATIONS ------------------------------------------------- */
@@ -554,6 +548,61 @@ function updateMessages(updatedLaterThan) {
     });
 }
 
+function sendMessage() {
+    var message = $('#input').find('input').val();
+    if (message != '') {
+        $.ajax({
+            url: "?action=aSendMessage",
+            type: "get",
+            data: { message : message }
+        })
+        .done(function (response, textStatus, jqXHR) {
+            $('#input').find('input').val('');
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log("Error" + textStatus + errorThrown);
+        })
+    }
+}
+
+function deleteMessage(messageId)
+{
+    if (confirm('Are you sure you want to delete this message?')) {
+        $.ajax({
+            url: "?action=aDeleteMessage",
+            type: "post",
+            data: { messageId : messageId }
+        })
+        .done(function (response, textStatus, jqXHR) {
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log("Error" + textStatus + errorThrown);
+        })
+        .always(function () {
+
+        });
+    } else {
+    }
+}
+
+function pinMessage(messageId)
+{
+    $.ajax({
+        url: "?action=aPinMessage",
+        type: "post",
+        data: { messageId : messageId }
+    })
+    .done(function (response, textStatus, jqXHR) {
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+        console.log("Error" + textStatus + errorThrown);
+    })
+    .always(function () {
+
+    });
+}
+
+
 $('#input input').on('keyup keypress', function(e) {
     var keyCode = e.keyCode || e.which;
     if (keyCode === 13) {
@@ -682,6 +731,7 @@ function submitEditMessage(e) {
 }
 
 /* ----------------------------------------------------- Media ----------------------------------------------------- */
+
 function updateLabel() {
     let value = $(this).val();
     value = value.substr(value.lastIndexOf('\\') + 1);

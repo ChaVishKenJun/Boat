@@ -32,11 +32,11 @@ if( isset($_SESSION['public']['iItemExists']) AND $_SESSION['public']['iItemExis
 }
 ?>
 <!--
-$session->PutData('iTitleValue', $title);
-            $session->PutData('iTypeValue', $type);
-            $session->PutData('iFirstNameValue', $firstname);
-            $session->PutData('iLastNameValue', $lastname);
-            $session->PutData('iCategoryValue', $category);-->
+$session->putData('iTitleValue', $title);
+            $session->putData('iTypeValue', $type);
+            $session->putData('iFirstNameValue', $firstname);
+            $session->putData('iLastNameValue', $lastname);
+            $session->putData('iCategoryValue', $category);-->
 
  <form name="createOrNewItem" enctype="multipart/form-data" action="?action=aCreateOrEditItem" method="post">
      <input type="hidden" name="itemId" <?php
