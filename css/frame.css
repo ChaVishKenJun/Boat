@@ -201,7 +201,7 @@ body {
 
 #pinnedMessage{
 	margin-top: 55px !important;
-
+	z-index: 10;
 }
 
 div.image, div.video {
