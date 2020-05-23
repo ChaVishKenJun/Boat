@@ -1,10 +1,13 @@
-<nav id="header" class="navbar navbar-dark fixed-top bg-light flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand" href="?menu=mHome">
+<nav id="header" class="navbar navbar-dark fixed-top bg-light flex-mdmd-nowrap p-0 shadow">
+    <button id="openSidebarButton" class="btn btn-light mx-3">
+      <svg class="bi bi-list" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+      </svg>
+    </button>
+    <a class="navbar-brand mx-3" href="?menu=mHome">
         <img id="logo" src="image/Logo.png" />
         Boat
     </a>
-    <ul id="navigation-link" class="navbar-nav ml-auto">
-    </ul>
     <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
         <?php
