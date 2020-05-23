@@ -354,7 +354,10 @@ function loadMessages(after = 0) {
     .done(function (response, textStatus, jqXHR) {
         if (after == 0) {
             if (response != '') {
-                $('#messages').html(formatMessages(response));                
+                $('#messages').html(formatMessages(response));       
+                
+                $($('.message')[0]).css('margin-top', $('#pinnedMessage').innerHeight())
+                
                 scrollDown();
                 loadImages();
                 loadVideos();
@@ -364,6 +367,9 @@ function loadMessages(after = 0) {
         } else {
             if (response != '') {
                 $('#messages').append(formatMessages(response));
+
+                $($('.message')[0]).css('margin-top', $('#pinnedMessage').innerHeight())
+
                 scrollDown();
                 loadImages();
                 loadVideos();
