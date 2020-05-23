@@ -369,12 +369,10 @@ class Action {
         $this->updateMessagesToRead($userId, $groupId);
         $this->updatePollToEnded($groupId);
 
-        $editedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE edited_date >= '$updatedLaterThan' AND groupchat_id = '$groupId'");
-        $pinnedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE pinned_date >= '$updatedLaterThan' AND groupchat_id = '$groupId'");
-        $deletedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE deleted_date >= '$updatedLaterThan' AND groupchat_id = '$groupId'");
-        $endedPolls = $db->single_dynamic_query("SELECT id FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message_poll.ended_date >= '$updatedLaterThan' AND message.groupchat_id = '$groupId'");
+        $updatedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE groupchat_id = '$groupId' AND (edited_date >= '$updatedLaterThan' OR pinned_date >= '$updatedLaterThan' OR deleted_date >= '$updatedLaterThan' OR read_date >= '$updatedLaterThan')");
+        $endedPolls = $db->single_dynamic_query("SELECT message.id FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message_poll.ended_date >= '$updatedLaterThan' AND message.groupchat_id = '$groupId'");
 
-        if ($editedMessages != "false" || $pinnedMessages != "false" || $deletedMessages != "false" || $endedPolls != "false") {
+        if ($updatedMessages != "false" || $endedPolls != "false") {
             $response = "true";
         }
         

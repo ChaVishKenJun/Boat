@@ -16,6 +16,7 @@ var dataLoader; // Interval object for polling data
 var lastMessageId = 0;
 var updateTimestamp = null;
 var mentionedUsers = [];
+var currentGroupId = 0;
 
 function toDateString(datetime) {
     let string ='';
@@ -207,7 +208,7 @@ function loadGroups() {
 
             groups.forEach(group => {
                 html += '<li class="nav-item">';
-                html += '<a class="nav-link" href="#" group-id="' + group['id'] + '" onclick=openGroup(this)>';
+                html += '<a class="nav-link' + (group['id'] == currentGroupId ? " active" : "") + '" href="#" group-id="' + group['id'] + '" onclick=openGroup(this)>';
                 html += '<span>' + group['name'] + '</span>';
                 html += '</a>';
                 html += '</li>';
@@ -227,12 +228,9 @@ function loadGroups() {
 function openGroup(sender) {
     clearInterval(dataLoader);
 
-    // When a group is opened, load the page.
-    $(sender).parent().find('.nav-link').removeClass('active');
-    $($(sender).parent().find('.nav-link')[0]).addClass('active');
-    $(sender).addClass('active');
-
     var groupId = $(sender).attr('group-id');
+
+    currentGroupId = groupId;
 
     if (groupId != null) {
         var xmlhttp = new XMLHttpRequest();
@@ -445,10 +443,10 @@ function formatMessages(rawMessage) {
                     result += "</span>";
                     break;
                 case "image":
-                    result += "<div class='image bg-light px-3 py-1 m-1 rounded'></div>";
+                    result += "<div class='d-inline-block image bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'></div>";
                     break;
                 case "video":
-                    result += "<div class='video bg-light px-3 py-1 m-1 rounded'></div>";
+                    result += "<div class='d-inline-block video bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'></div>";
                     break;
                 case "poll":    
                     result += "<div class='poll bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>";
