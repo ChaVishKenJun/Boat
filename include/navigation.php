@@ -1,5 +1,5 @@
 <nav id="header" class="navbar navbar-dark fixed-top bg-light flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="?menu=mHome">
+    <a class="navbar-brand" href="?menu=mHome">
         <img id="logo" src="image/Logo.png" />
         Boat
     </a>
