@@ -7,40 +7,41 @@ class Action {
         global $security;
         
         switch ($action) {
-            
-            case "aCreateGroup":                
-                $this->createGroup($_POST['name'], $_POST["users"]);
-            break;
             case "aSignUp":
                 if ($security->dataintegrity($_REQUEST) == 1) {
                     $this->signUp($_POST['firstname'], $_POST['lastname'], $_POST['email'], $_POST['password']);
                 } else {
-                    echo "XSS Attack";
-                    exit;
+                    // TODO: Log XSS attack attempt
                 }
             break;
             case "aSignIn":
                 if ($security->dataintegrity($_REQUEST) == 1) {
                     $this->signIn($_POST['email'], $_POST['password']);	
                 } else {
-                    echo "XSS Attack";
-                    exit;
+                    // TODO: Log XSS attack attempt
                 }
             break;
             case "aSignOut":
                 if ($security->dataintegrity($_REQUEST) == 1) {
                     $this->signOut();
                 } else {
-                    echo "XSS Attack";
-                    exit;
+                    // TODO: Log XSS attack attempt
                 }  
             break;
+
             case "aQueryUser":
                 $this->queryUser($_GET["query"]);
+            break;
+            case "aCreateGroup":                
+                $this->createGroup($_POST['name'], $_POST["users"]);
+            break;
+            case "aLoadGroups":
+                $this->loadGroups();
             break;
             case "aOpenGroup":
                 $this->openGroup($_GET["groupId"]);
             break;
+
             case "aSendMessage":
                 $this->sendMessage($_GET["message"], $_GET["mentions"]);
             break;
@@ -50,12 +51,23 @@ class Action {
             case "aGetUpdatedMessages" :
                 $this->getUpdatedMessages($_GET["updatedLaterThan"]);
             break;
-            case "aUpdateNotificationsToRead":
-                $this->updateNotificationsToRead();
+            case "aEditMessage":
+                $this->editMessage($_POST["data"]);
             break;
+            case "aPinMessage":
+                $this->pinMessage($_POST["messageId"]);
+            break;
+            case "aDeleteMessage":
+                $this->deleteMessage($_POST["messageId"]);
+            break;
+
             case "aLoadNotifications":                
                 $this->loadNotifications();
             break;
+            case "aUpdateNotificationsToRead":
+                $this->updateNotificationsToRead();
+            break;
+
             case "aCreatePoll":
                 $this->createPoll($_POST["data"]);
             break;
@@ -65,21 +77,14 @@ class Action {
             case "aEndPoll":
                 $this->endPoll($_POST["messageId"], $_POST["force"]);
             break;
-            case "aDeleteMessage":
-                $this->deleteMessage($_POST["messageId"]);
-            break;
-            case "aEditMessage":
-                $this->editMessage($_POST["data"]);
-            break;
-            case "aPinMessage":
-                $this->pinMessage($_POST["messageId"]);
-            break;
+
             case "aSendImage":
                 $this->sendImage($_FILES['file']);
             break;
             case "aLoadImage":
                 $this->loadImage($_GET["messageId"]);
             break;
+
             case "aSendVideo":
                 $this->sendVideo($_FILES['file']);
             break;
@@ -91,75 +96,70 @@ class Action {
         }
     }
 
+    function signUp($firstname, $lastname, $email, $password) {
+		global $db;
+		global $header;
+		global $security;
+        global $session;
+        
+        $encrypted_pw = md5($password);
+        
+        $user = $db->single_dynamic_query("SELECT id from user WHERE email='$email'");
+
+        if ($user == 'false') {
+            // Create user when there is no user with the email address
+            $userId = $db->createUser($firstname, $lastname, $email, $encrypted_pw);
+            
+            // Send welcoming notification to the new user
+            $db->createNotification($userId, 'Welcome to Boat!', 'NULL');
+
+            $session->unsetData('UserAlreadyExistMessage');
+            $session->putData('SignInMessage', 'You are successfully signed up.');
+
+            $header->setHeader('mSignIn');
+        } else {
+            $session->putData('UserAlreadyExistMessage', 1);
+
+            $header->setHeader('mSignUp');
+        }
+    }
+
 	function signIn($email, $password) {
+        global $db;
 		global $header;
 		global $security;
 		global $session;
-        global $db;
         
-        $encryptet_pw = md5($password);
+        $encrypted_pw = md5($password);
 
-        $isFound = $db->single_dynamic_query("SELECT id FROM user WHERE email='$email' AND password='$encryptet_pw'");
+        $user = $db->single_dynamic_query("SELECT id FROM user WHERE email='$email' AND password='$encrypted_pw'");
 
-        if ($isFound == "false") {
-            $session->putData("SignInAttemptMessage", 1);
-            $session->putData("SignedIn", "false");
-            $header->setHeader("mSignIn");
+        if ($user == 'false') {
+            $session->putData('SignInAttemptMessage', 1);
+            $session->putData('SignedIn', 'false');
+
+            $header->setHeader('mSignIn');
         } else {
-            $session->unsetData("SignInAttemptMessage");
-            $session->putData("SignedIn", "true");
-            $session->putData("UserId", $isFound[0][0][0]);
-            $header->setHeader("mHome");
+            $session->unsetData('SignInAttemptMessage');
+            $session->putData('SignedIn', 'true');
+
+            $session->putData('UserId', $user[0][0][0]);
+
+            $header->setHeader('mHome');
         }
 	}
 
 	function signOut() {
-		global $session; 
         global $header;
-
-		$session->putData("SignInMessage", "You are succesfully  out.");
+        global $session;
         
-        $session->putData("SignedIn", "false");
-        $session->unsetData("UserId");
-		$header->setHeader("mSignIn");
+		$session->putData('SignInMessage', 'You are succesfully signed out.');
+        $session->putData('SignedIn', 'false');
+        $session->unsetData('UserId');
+
+		$header->setHeader('mSignIn');
     }
     
-    function signUp($firstname, $lastname, $email, $password) {	
-		//Globalize
-		global $header;
-		global $security;
-		global $session;
-		global $db;
-                
-		$encryptet_pw = md5($password); 
-                
-		$iffound = $db->single_dynamic_query("SELECT id from user WHERE email='$email'");
-
-        //check if item exists
-		if($iffound=='false') {
-            //user not found
-            $session->unsetData('useralreadyexistmessage');
-            $db->single_dynamic_query("INSERT INTO user (firstname, lastname, email, password)"
-            . "VALUES ('$firstname', '$lastname', '$email', '$encryptet_pw')");
-            $session->putData("SignInMessage", "You are successfully signed up.") ;
-
-            //add welcome noti
-            $userId = $db->getUserID($email);
-            $db->createNotification($userId, "Welcome to our application!","NULL");
-
-            $header->setHeader('mSignIn');
-		} else { 
-            $session->PutData('useralreadyexistmessage', 1);
-            $header->setHeader('mSignUp');
-        }
-
-    }
-
-    /**
-     * 
-     * @param string $query 
-     * @return
-     */
     function queryUser($query) {
         global $db;  
 
@@ -212,6 +212,26 @@ class Action {
 
         // Reload the page
         $header->setHeader("mHome");
+    }
+
+    function loadGroups() {
+        global $db;
+        global $session;
+
+        $result = [];
+
+        $userId = $session->getData('UserId');
+
+        $groups = $db->single_dynamic_query("SELECT groupchat.id, groupchat.name FROM groupchat INNER JOIN user_group ON groupchat.id = user_group.group_id WHERE user_group.user_id = $userId");
+
+        if ($groups != 'false') {
+            foreach ($groups[0] as $group) {
+                array_push($result, array('id' => $group[0], 'name' => $group[1]));
+            }
+        }
+
+        echo json_encode($result);
+        exit;
     }
 
     function openGroup($groupId) {
