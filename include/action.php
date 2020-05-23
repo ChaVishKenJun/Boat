@@ -42,7 +42,7 @@ class Action {
                 $this->openGroup($_GET["groupId"]);
             break;
             case "aSendMessage":
-                $this->sendMessage($_GET["message"]);
+                $this->sendMessage($_GET["message"], $_GET["mentions"]);
             break;
             case "aLoadMessages":
                 $this->loadMessages($_GET["after"]);
@@ -220,15 +220,27 @@ class Action {
         exit;
     }
 
-    function sendMessage($message) {
+    function sendMessage($message, $mentions) {
         global $session;
         global $db;
-        
-        $userId = $session->getData("UserId");
-        $groupId = $session->getData("GroupId");
+
+        $userId = $session->getData('UserId');
+        $groupId = $session->getData('GroupId');
 
         if (isset($groupId) && isset($userId)) {
             $messageId = $db->sendMessage($groupId, $userId, $message);
+
+            if ($mentions != '') {
+                $sender = $db->single_dynamic_query("SELECT firstname, lastname FROM user WHERE id = $userId");
+                if ($sender != 'false') {
+                    $senderFullName = $sender[0][0][0] . ' ' . $sender[0][0][1];
+                    $message = $senderFullName . ' has mentioned you.';
+                    foreach ($mentions as $receiverId) {
+                        $db->createNotification($receiverId, $message, $messageId);
+                    }
+                }
+            }
+
             echo $messageId;
             exit;
         }

@@ -2,6 +2,7 @@ var dataLoader; // Interval object for polling data
 
 var lastMessageId = 0;
 var updateTimestamp = null;
+var mentionedUsers = [];
 
 function toDateString(datetime) {
     let string ='';
@@ -184,7 +185,7 @@ function sendMessage() {
         $.ajax({
             url: "?action=aSendMessage",
             type: "get",
-            data: { message : message }
+            data: { message : message, mentions: mentionedUsers.map(a => a.id) }
         })
         .done(function (response, textStatus, jqXHR) {
             $('#input').find('input').val('');
@@ -681,17 +682,16 @@ function submitEditMessage(e) {
     return false;
 }
 
-$('#messageInput').on('keyup keydown paste', function () {
+$('#messageInput').on('change paste keyup', function () {
     var textMessage = $(this).val();
 
     if(textMessage != "") {
         if (textMessage.includes("@")) {
             var query = textMessage.substr(textMessage.lastIndexOf("@") + 1);    
-            if (query != "") {
+            if (query != "" && !query.includes(')')) {
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
-                        $('.dropup').remove();
         
                         var result = '';
                         result += '<div class="dropup">';
@@ -701,7 +701,7 @@ $('#messageInput').on('keyup keydown paste', function () {
                         if (this.responseText != '') {
                             this.responseText.split('\\n').forEach(user => {
                                 var fields = user.split(',');
-                                result += '<a class="dropdown-item" style="cursor: pointer;" user-id=' + fields[0] + ' onclick=selectMentionUser("' + fields[1] + '","' + fields[2] + '")>';
+                                result += '<a class="dropdown-item" style="cursor: pointer;" user-id=' + fields[0] + ' onclick=selectMentionUser(' + fields[0] + ",'" + fields[1] + "','" + fields[2] + "','" + fields[3] + "')>";
                                 result += fields[1] + ' ';
                                 result += fields[2] + ' ';
                                 result += '<span style="font-size:.75em;">' + fields[3] + '</span>';
@@ -729,16 +729,45 @@ $('#messageInput').on('keyup keydown paste', function () {
         } else {
             $('.dropup').remove();
         }
+
+        // Update mentioned users
+        var updatedUsers = [];
+        var deletedUsers = [];
+
+        mentionedUsers.forEach(user => {
+            if (textMessage.includes(getUserString(user.firstname, user.lastname, user.email))) {
+                updatedUsers.push(user);
+            } else {
+                deletedUsers.push(user);
+            }
+        });
+
+        mentionedUsers = updatedUsers;
+
+        if (deletedUsers.length > 0) {
+            deletedUsers.forEach(user => {
+                const userString = '@' + getUserString(user.firstname, user.lastname, user.email);
+                $('#messageInput').val(textMessage.replace(userString.substring(0, userString.length - 1), ''));
+            });
+        }
+
     } else {
         $('.dropup').remove();
     }
       
 });
 
-function selectMentionUser(firstname, lastname) {   
+function selectMentionUser(id, firstname, lastname, email) {   
     var textMessage = $('#messageInput').val().substr(0, $('#messageInput').val().lastIndexOf("@") +1);    
-    $('#messageInput').val(textMessage + firstname + " " + lastname + " ");
+    $('#messageInput').val(textMessage + getUserString(firstname, lastname, email) + ' ');
+
+    mentionedUsers.push({ 'id': id, 'firstname': firstname, 'lastname': lastname, 'email': email });
+
     $('.dropup').remove();    
+}
+
+function getUserString(firstname, lastname, email) {
+    return firstname + " " + lastname + " " + '(' + email + ')';
 }
 
 /* ----------------------------------------------------- Media ----------------------------------------------------- */

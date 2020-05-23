@@ -132,15 +132,13 @@ class Database {
 		return $personId;
 	}
 
-	function createNotification($userId, $message,$messageId) {
+	function createNotification($userId, $message, $messageId) {
 		$date = date("Y-m-d H:i:s");
 
 		$this->open_db();
 		$sql="INSERT INTO notification (message, is_read, date, message_id, user_id)" . "VALUES ('$message', 0, '$date', $messageId, $userId)";
 		$this->db_connection->query($sql);
-		$groupId = $this->db_connection->insert_id;
 		$this->db_connection->close();
-		return $groupId;
 	}
 
 
@@ -177,6 +175,7 @@ class Database {
 		$messageId = $this->db_connection->insert_id;
 
 		$message = $this->db_connection->real_escape_string($message);
+
 		$sql = "INSERT INTO message_text (id, data) VALUES ('$messageId', '$message')";
 		$this->db_connection->query($sql);
 

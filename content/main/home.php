@@ -3,6 +3,7 @@
     <div class="form-row">
         <div class="col-10">
             <input type="text" class="form-control" id="messageInput">
+            <input type="hidden" id="mentionedUserIds">
         </div>
         <div class="col-1">
             <a tabindex="0" class="btn btn-lg btn-lsecondary btn-block text-white" role="button" data-toggle="popover">+</a>
