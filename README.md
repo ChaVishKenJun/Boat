@@ -39,6 +39,6 @@ https://www.apachefriends.org/download.html
 ### 3. Add changes
 `git add .`
 ### 4. Commit changes
-`git commit -m "Explain your commit`
+`git commit -m "Explain your commit"`
 ### 5. Push changes
 `git push`
