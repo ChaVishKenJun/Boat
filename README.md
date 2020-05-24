@@ -21,6 +21,7 @@ https://www.apachefriends.org/download.html
 ### 3. Start Apache and MySQL
 ### 4. Check if it is running on http://localhost/
 ### 5. Put the code in C:\xampp\htdocs
+### 6. Import 'DB2.sql' on http://localhost/phpmyadmin/ - Import
 
 
 
