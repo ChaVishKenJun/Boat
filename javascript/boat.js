@@ -852,7 +852,6 @@ function submitEditMessage(e) {
         data: { data: JSON.stringify($(e.target).serializeArray()) }
     })
     .done(function (response, textStatus, jqXHR) {
-        alert(response);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);
