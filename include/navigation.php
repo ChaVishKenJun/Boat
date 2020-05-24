@@ -8,6 +8,8 @@
         <img id="logo" src="image/Logo.png" />
         Boat
     </a>
+    <ul id="navigation-link" class="navbar-nav ml-auto">
+    </ul>
     <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
         <?php

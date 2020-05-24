@@ -116,6 +116,11 @@ class Database {
 	
 	function createUser($firstname, $lastname, $email, $password) {
 		$this->open_db();
+
+		$firstname = $this->db_connection->real_escape_string($firstname);
+		$lastname = $this->db_connection->real_escape_string($lastname);
+		$email = $this->db_connection->real_escape_string($email);
+
 		$sql = "INSERT INTO user (firstname, lastname, email, password) VALUES ('$firstname', '$lastname', '$email', '$password')";
 		$this->db_connection->query($sql);
 		$userId = $this->db_connection->insert_id;
@@ -126,7 +131,10 @@ class Database {
 	function getUserID($email) {
 		//its a static prepared and encryptet sql SELECT
 		$this->open_db();
-		$sql="SELECT id from user where email='$email'";
+
+		$email = $this->db_connection->real_escape_string($email);
+
+		$sql = "SELECT id from user where email='$email'";
 		$result = $this->db_connection->query($sql);
 		$row = $result->fetch_assoc();
 		//$row = mysql_fetch_array($result);
@@ -138,6 +146,9 @@ class Database {
 		$date = date("Y-m-d H:i:s");
 
 		$this->open_db();
+
+		$message = $this->db_connection->real_escape_string($message);
+
 		$sql="INSERT INTO notification (message, is_read, date, message_id, user_id)" . "VALUES ('$message', 0, '$date', $messageId, $userId)";
 		$this->db_connection->query($sql);
 		$this->db_connection->close();
@@ -151,6 +162,9 @@ class Database {
 	 */
 	function createGroup($name) {
 		$this->open_db();
+		
+		$name = $this->db_connection->real_escape_string($name);
+
 		$sql="INSERT INTO groupchat (name)" . "VALUES ('$name')";
 		$this->db_connection->query($sql);
 		$groupId = $this->db_connection->insert_id;
@@ -202,8 +216,12 @@ class Database {
 	}
 
 	function editMessage($messageId, $data) {
-		$this->open_db();
 		$date = $this->getCurrentDateTime();
+
+		$this->open_db();
+		
+		$data = $this->db_connection->real_escape_string($data);
+
 		$sql = "
 			UPDATE message
 			INNER JOIN message_text ON (message.id = message_text.id)
@@ -236,8 +254,11 @@ class Database {
 		$micro = sprintf("%06d",($t - floor($t)) * 1000000);
 		$d = new DateTime(date('Y-m-d H:i:s.'.$micro, $t));
 		$date = $d->format("Y-m-d H:i:s.u");
-
+		
 		$this->open_db();
+
+		$title = $this->db_connection->real_escape_string($title);
+
 		$sql = "INSERT INTO message (groupchat_id, date, user_id) VALUES ('$groupId', '$date', '$userId')";
 		$this->db_connection->query($sql);
 		$messageId = $this->db_connection->insert_id;
@@ -251,6 +272,9 @@ class Database {
 
 	function addOptionToPoll($pollId, $option) {
 		$this->open_db();
+		
+		$option = $this->db_connection->real_escape_string($option);
+		
 		$sql = "INSERT INTO poll_option (name, message_poll_id) VALUES ('$option', '$pollId')";
 		$this->db_connection->query($sql);
 		$optionId = $this->db_connection->insert_id;

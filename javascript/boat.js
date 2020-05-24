@@ -9,7 +9,16 @@ const newGroupLi = '<li class="nav-item">' +
         '&nbsp;' +
         '<span>New group</span>' + 
     '</a>' + 
-    '</li>';
+'</li>';
+
+const sentSvg = '<svg class="bi bi-check float-right" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' + 
+    '<path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>' + 
+'</svg>';
+
+const readSvg = '<svg class="bi bi-check-all float-right" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' + 
+    '<path fill-rule="evenodd" d="M12.354 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>' + 
+    '<path d="M6.25 8.043l-.896-.897a.5.5 0 10-.708.708l.897.896.707-.707zm1 2.414l.896.897a.5.5 0 00.708 0l7-7a.5.5 0 00-.708-.708L8.5 10.293l-.543-.543-.707.707z"/>' + 
+'</svg>';
 
 /* GLOBAL VARIABLES */
 var dataLoader; // Interval object for polling data
@@ -73,7 +82,7 @@ $(document).ready(function () {
             var messageId = $(this).parent().parent().parent().attr('message-id');
             var data = $(this).parent().children('span').children('span').html();
             var div = $('<div></div>');
-            div.append('<button type="button" class="btn btn-block" data-toggle="modal" data-target="#editMessageModal" id="editMessageButton" onclick="editMessage(' + messageId + ',\'' + data + '\')">Edit</svg></button>');
+            div.append('<button type="button" class="btn btn-block" data-toggle="modal" data-target="#editMessageModal" id="editMessageButton" onclick="editMessage(' + messageId + ')">Edit</svg></button>');
             div.append('<button type="button" class="btn btn-block" onclick="pinMessage(' + messageId + ')">Pin</button>');
             div.append('<button type="button" class="btn btn-block" onclick="deleteMessage(' + messageId + ')">Delete</button>');
             return div;
@@ -392,7 +401,7 @@ function formatMessages(rawMessage) {
 
     messages.forEach(message => {
         
-        if(message.pinnedDate != null)
+        if (message.pinnedDate != null && message.deletedDate == null)
         {
             result += '<div id="pinnedMessage" message-id="' + message.messageId + '" class="text-white bg-primary mb-3 ml-md-auto col-lg-10 col-md-9 col-12 px-4 py-2 fixed-top">';
             result += '<div>'
@@ -437,18 +446,12 @@ function formatMessages(rawMessage) {
         {
             if(message.isMine)
             {
-                result += "<a tabindex='0' class='text-black message-button' data-trigger='focus' role='button' data-toggle='popover'>";
-                result += '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
-                result += '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>';
-                result += '</svg>';
-                result += '</a>';   
+                result += renderMessageButton();  
             }               
 
             switch (message.type) {
                 case "text":
-                    result += "<span class='bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'>"
-                    result += "<span class='data'>" + message.data + "</span>";
-                    result += "</span>";
+                    result += renderTextMessage(message.data, message.isMine);
                     break;
                 case "image":
                     result += "<div class='d-inline-block image bg-light px-3 py-1 m-1 rounded" + (message.isMine ? " float-right" : " float-left") + "'></div>";
@@ -464,42 +467,29 @@ function formatMessages(rawMessage) {
                 default:
                     break;
             }            
-        }else {
-            result += "<span class='" + (message.isMine ? " float-right" : " float-left") + "'>";
-            result += "<span class='data'>Message deleted</span>";
-            result += "</span>";
+        } else {
+            result += renderDeleteMessage(message.isMine);
         }
         
         result += "</div>";
         result += "</div>";
 
         if(message.deletedDate == null && message.editedDate != null) {
-            result += "<div class='row meta-row'>";
-            result += "<div class='col position-relative'>";
-            result += "<span " + (message.isMine ? "class='float-right'" : "") + ">";
-            result += "<span class='data'>Message edited</span>";
-            result += "</span>";
-            result += "</div>";
-            result += "</div>";
+            result += renderEditedMessage(message.isMine);
         }
     
         result += "<div class='row mb-2 date-row'>"
         result += "<div class='col'>";
-        //tracking message
-        if(message.isMine)
+        // Tracking message
+        if (message.isMine)
         {
-            if(message.readDate == null){
-                result += '<svg class="bi bi-check float-right" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
-                result += '<path fill-rule="evenodd" d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
-                result += '</svg>';
+            if (message.readDate == null) {
+                result += sentSvg;
             } else {
-                result += '<svg class="bi bi-check-all float-right" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">';
-                result += '<path fill-rule="evenodd" d="M12.354 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L5 10.293l6.646-6.647a.5.5 0 01.708 0z" clip-rule="evenodd"/>';
-                result += '<path d="M6.25 8.043l-.896-.897a.5.5 0 10-.708.708l.897.896.707-.707zm1 2.414l.896.897a.5.5 0 00.708 0l7-7a.5.5 0 00-.708-.708L8.5 10.293l-.543-.543-.707.707z"/>';
-                result += '</svg>';
+                result += readSvg;
             }            
         } 
-        //date
+        // Date
         result += "<span class='date badge text-muted font-weight-light" + (message.isMine ? " float-right" : "") + "'>" + message.date.split('.')[0] + "</span>";
         result += "</span>";         
         result += "</div>";
@@ -515,7 +505,7 @@ function formatMessages(rawMessage) {
 function formatPoll(message){
     result = '';
 
-    const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mt-2 mb-1' onclick='return endPoll(" + message.messageId + ");'>End</a>";
+    const endButtonHtml = "<a class='btn btn-primary btn-sm btn-block text-white mb-1' onclick='return endPoll(" + message.messageId + ");'>End</a>";
     if (message.data.endedDate != null) {
         result += "<h5 class='text-dark text-center mt-1'>" + message.data.title + "</h5>";
         result += formatPollResult(message.data.result);
@@ -579,7 +569,7 @@ function formatPoll(message){
                 }
             }
 
-            result += "<button class='btn btn-primary btn-sm btn-block' type='submit'>Vote</button>";
+            result += "<button class='btn btn-primary btn-sm btn-block mb-2' type='submit'>Vote</button>";
 
             if (message.isMine) {
                 result += endButtonHtml;
@@ -598,8 +588,59 @@ function updateMessages(updatedLaterThan) {
         type: "get"
     })
     .done(function (response, textStatus, jqXHR) {
-        if (response == "true") {
-            loadMessages();
+        if (response != '[]') {
+            try {
+                updates = JSON.parse(response);
+                
+                updates.forEach(update => {
+                    const message = $('.message[message-id=' + update.id + ']');
+                    if (message.length > 0) {
+                        switch (update.change) {
+                            case 'edit':
+                                switch (update.type) {
+                                    case 'text':
+                                        var container = $(message).find('.content-row').find('.col');
+                                        var isMine = $(message).find('.float-right').length > 0;
+                                        container.html(renderTextMessage(update.content, isMine));
+
+                                        if ($(message).find('.meta-row').length == 0) {
+                                            $(message).find('.content-row').after(renderEditedMessage(isMine));
+                                        }
+
+                                        break;
+                                    default:
+                                        // TODO: Implement other types when they are editable.
+                                        break;
+                                }
+                                break;
+                            case 'delete':
+                                var container = $(message).find('.content-row').find('.col');
+                                var isMine = $(message).find('.float-right').length > 0;
+                                container.html(renderDeleteMessage(isMine));
+                                $(message).find('.meta-row').remove();
+                                break;
+                            case 'pinned':
+                                loadMessages();
+                                break;
+                            case 'read':
+                                var container = $(message).find('.date-row').find('.col');
+                                var isMine = $(message).find('.float-right').length > 0;
+
+                                if (isMine) {
+                                    container.find('svg').remove();
+                                    container.html(readSvg + container.html());
+                                }
+                                break;
+                            case 'ended':
+                                loadMessages();
+                                break;
+                        }
+                    }
+                });
+            } catch (e) {
+                console.log("Invalid JSON: " + response);
+            }
+            
             updateTimestamp = new Date();
         }
     });
@@ -611,7 +652,7 @@ function sendMessage() {
         $.ajax({
             url: "?action=aSendMessage",
             type: "get",
-            data: { message : message }
+            data: { message : message, mentions: mentionedUsers.map(a => a.id) }
         })
         .done(function (response, textStatus, jqXHR) {
             $('#input').find('input').val('');
@@ -659,13 +700,43 @@ function pinMessage(messageId)
     });
 }
 
-
 $('#input input').on('keyup keypress', function(e) {
     var keyCode = e.keyCode || e.which;
     if (keyCode === 13) {
         sendMessage();
     }
 });
+
+function renderMessageButton() {
+    return '<a tabindex="0" class="text-black message-button" data-trigger="focus" role="button" data-toggle="popover">' + 
+        '<svg class="bi bi-three-dots-vertical" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' + 
+            '<path fill-rule="evenodd" d="M9.5 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clip-rule="evenodd"/>' + 
+        '</svg>' + 
+    '</a>';  
+}
+
+function renderEditedMessage(isMine) {
+    return '<div class="row meta-row">' + 
+        '<div class="col position-relative">' + 
+            '<span ' + (isMine ? 'class="float-right"' : '') + '>' + 
+                '<span class="data">Message edited</span>' + 
+            '</span>' + 
+        '</div>' + 
+    '</div>';
+}
+
+function renderDeleteMessage(isMine) {
+    return '<span class="' + (isMine ? ' float-right' : ' float-left') + '">' + 
+        '<span class="data">Message deleted</span>' + 
+    '</span>';
+}
+
+function renderTextMessage(text, isMine) {
+    return (isMine ? renderMessageButton() : '') + 
+    '<span class="bg-light px-3 py-1 m-1 rounded' + (isMine ? ' float-right' : ' float-left') + '">' + 
+        '<span class="data">' + text + '</span>' + 
+    '</span>';
+}
 
 /* ------------------------------------------------------ POLL ----------------------------------------------------- */
 
@@ -763,10 +834,14 @@ function formatPollResult(pollResult) {
     return result;
 }
 
-function editMessage(messageId, data)
+function editMessage(messageId)
 {
-    $("#editMessageForm #messageId").val(messageId);
-    $("#editMessageForm .modal-body #data").val(data);
+    var data = $('.message[message-id=' + messageId + ']').find('.content-row').find('span.data');
+    
+    if (data.length > 0) {
+        $("#editMessageForm #messageId").val(messageId);
+        $("#editMessageForm .modal-body #data").val(data.text());
+    }
 }
 
 function submitEditMessage(e) {
@@ -777,6 +852,7 @@ function submitEditMessage(e) {
         data: { data: JSON.stringify($(e.target).serializeArray()) }
     })
     .done(function (response, textStatus, jqXHR) {
+        alert(response);
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
         console.log("Error" + textStatus + errorThrown);

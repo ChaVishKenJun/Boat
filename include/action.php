@@ -263,6 +263,7 @@ class Action {
 
             if ($mentions != '') {
                 $sender = $db->single_dynamic_query("SELECT firstname, lastname FROM user WHERE id = $userId");
+
                 if ($sender != 'false') {
                     $senderFullName = $sender[0][0][0] . ' ' . $sender[0][0][1];
                     $message = $senderFullName . ' has mentioned you.';
@@ -369,6 +370,7 @@ class Action {
     }
 
     function getUpdatedMessages($updatedLaterThan) {
+        $result = [];
         $response = "false";
 
         global $session;
@@ -380,14 +382,54 @@ class Action {
         $this->updateMessagesToRead($userId, $groupId);
         $this->updatePollToEnded($groupId);
 
-        $updatedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE groupchat_id = '$groupId' AND (edited_date >= '$updatedLaterThan' OR pinned_date >= '$updatedLaterThan' OR deleted_date >= '$updatedLaterThan' OR read_date >= '$updatedLaterThan')");
-        $endedPolls = $db->single_dynamic_query("SELECT message.id FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message_poll.ended_date >= '$updatedLaterThan' AND message.groupchat_id = '$groupId'");
+        $editedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE groupchat_id = '$groupId' AND (edited_date >= '$updatedLaterThan')");
+        if ($editedMessages != 'false') {
+            foreach ($editedMessages[0] as $message) {
+                $messageId = $message[0];
+                $type = $db->getMessageType($messageId);
+                switch ($type) {
+                    case 'text':
+                        $textMessage = $db->single_dynamic_query("SELECT data FROM message_text WHERE id = $messageId");
+                        if ($textMessage != "false") {
+                            array_push($result, array('id' => $messageId, 'change' => 'edit', 'type' => $type, 'content' => $textMessage[0][0][0]));
+                        }
+                        break;
+                    default:
+                        // TODO: Implement other types when they are editable.
+                        break;
+                }
+            }
+        }
 
-        if ($updatedMessages != "false" || $endedPolls != "false") {
-            $response = "true";
+        $deletedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE groupchat_id = '$groupId' AND (deleted_date >= '$updatedLaterThan')");
+        if ($deletedMessages != 'false') {
+            foreach ($deletedMessages[0] as $message) {
+                array_push($result, array('id' => $message[0], 'change' => 'delete', 'type' => '', 'content' => ''));
+            }
+        }
+
+        $pinnedMessages = $db->single_dynamic_query("SELECT id FROM message WHERE groupchat_id = '$groupId' AND (pinned_date >= '$updatedLaterThan')");
+        if ($pinnedMessages != 'false') {
+            foreach ($pinnedMessages[0] as $message) {
+                array_push($result, array('id' => $message[0], 'change' => 'pinned', 'type' => '', 'content' => ''));
+            }
+        }
+
+        $readMessages = $db->single_dynamic_query("SELECT id FROM message WHERE groupchat_id = '$groupId' AND (read_date >= '$updatedLaterThan')");
+        if ($readMessages != 'false') {
+            foreach ($readMessages[0] as $message) {
+                array_push($result, array('id' => $message[0], 'change' => 'read', 'type' => '', 'content' => ''));
+            }
+        }
+
+        $endedPolls = $db->single_dynamic_query("SELECT message.id FROM message_poll INNER JOIN message ON message_poll.id = message.id WHERE message_poll.ended_date >= '$updatedLaterThan' AND message.groupchat_id = '$groupId'");
+        if ($endedPolls != 'false') {
+            foreach ($endedPolls[0] as $message) {
+                array_push($result, array('id' => $message[0], 'change' => 'ended', 'type' => 'poll', 'content' => ''));
+            }
         }
         
-        echo $response;
+        echo json_encode($result);
         exit;
     }
 
@@ -583,7 +625,8 @@ class Action {
         global $db;
 
         try {    
-            // Get PHP data from json
+            // Get PHP data from 
+            
             foreach (json_decode($data, true) as $field) {
                 switch ($field["name"]) {
                     case "messageId":
@@ -594,6 +637,7 @@ class Action {
                     break;
                 }
             }
+
             $db->editMessage($messageId, $message);
             echo "true";
         } catch (Exception $e) {
